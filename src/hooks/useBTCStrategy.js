@@ -10,6 +10,7 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
   const [sellAtPeak1, setSellAtPeak1] = useState(DEFAULT_VALUES.sellAtPeak1);
   const [payOffLoan, setPayOffLoan] = useState(true);
   const [selectedScenario, setSelectedScenario] = useState('neutral');
+  const [inflationRate, setInflationRate] = useState(DEFAULT_VALUES.inflationRate);
 
   // BTC calculations
   const btcAmount = loanAmount / (btcBuyPrice * usdPlnRate);
@@ -57,6 +58,20 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
   const bondsTax = calculateTax(bondsCompoundReturns);
   const bondsNetReturn = bondsCompoundReturns - bondsTax;
 
+  // Inflation-adjusted calculations (real values)
+  const inflationFactor2027 = Math.pow(1 + inflationRate / 100, 2); // 2 years to peak 1
+  const inflationFactor2029 = Math.pow(1 + inflationRate / 100, 4); // 4 years to peak 2
+  
+  // Real values (inflation-adjusted)
+  const netProfitPeak1Real = netProfitPeak1 / inflationFactor2027;
+  const netProfitPeak2Real = netProfitPeak2 / inflationFactor2029;
+  const totalNetProfitReal = netProfitPeak1Real + netProfitPeak2Real;
+  
+  const netProfitFull1Real = netProfitFull1 / inflationFactor2027;
+  const netProfitFull2Real = netProfitFull2 / inflationFactor2029;
+  
+  const bondsNetReturnReal = bondsNetReturn / Math.pow(1 + inflationRate / 100, loanYears);
+
   return {
     // State
     btcBuyPrice,
@@ -73,6 +88,8 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
     setPayOffLoan,
     selectedScenario,
     setSelectedScenario,
+    inflationRate,
+    setInflationRate,
 
     // BTC calculations
     btcAmount,
@@ -105,6 +122,16 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
     // Bonds results
     bondsCompoundReturns,
     bondsTax,
-    bondsNetReturn
+    bondsNetReturn,
+
+    // Inflation-adjusted results
+    netProfitPeak1Real,
+    netProfitPeak2Real,
+    totalNetProfitReal,
+    netProfitFull1Real,
+    netProfitFull2Real,
+    bondsNetReturnReal,
+    inflationFactor2027,
+    inflationFactor2029
   };
 }; 

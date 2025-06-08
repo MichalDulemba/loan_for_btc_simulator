@@ -15,7 +15,9 @@ const BTCParameters = ({
   selectedScenario,
   setSelectedScenario,
   btcAmount,
-  breakEvenPrice
+  breakEvenPrice,
+  inflationRate,
+  setInflationRate
 }) => {
   return (
     <div className="mb-10">
@@ -50,7 +52,7 @@ const BTCParameters = ({
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         <div>
           <label className="block text-base font-medium text-gray-700 mb-2">
             Cena zakupu BTC ($)
@@ -100,6 +102,21 @@ const BTCParameters = ({
             onChange={(e) => setUsdPlnRate(parseFloat(e.target.value))}
             className="w-full px-4 py-3 border border-gray-300 rounded-md text-base"
             step="0.01"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-base font-medium text-gray-700 mb-2">
+            Inflacja roczna (%)
+          </label>
+          <input
+            type="number"
+            value={inflationRate}
+            onChange={(e) => setInflationRate(parseFloat(e.target.value))}
+            className="w-full px-4 py-3 border border-gray-300 rounded-md text-base"
+            step="0.1"
+            min="0"
+            max="20"
           />
         </div>
       </div>

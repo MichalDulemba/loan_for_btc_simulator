@@ -11,7 +11,7 @@ import LoanParameters from './LoanParameters';
 import BTCParameters from './BTCParameters';
 
 // Import utilities
-import { formatPLN, formatUSD, formatPercentage } from '../utils/formatters';
+import { formatPLN, formatUSD, formatPercentage, formatNumber } from '../utils/formatters';
 import { calculateROI } from '../utils/calculations';
 import { ASSUMPTIONS } from '../constants/defaults';
 
@@ -127,6 +127,8 @@ const BTCLoanCalculator = () => {
         setSelectedScenario={btcStrategy.setSelectedScenario}
         btcAmount={btcStrategy.btcAmount}
         breakEvenPrice={btcStrategy.breakEvenPrice}
+        inflationRate={btcStrategy.inflationRate}
+        setInflationRate={btcStrategy.setInflationRate}
       />
 
       {/* Strategy Configuration */}
@@ -291,6 +293,99 @@ const BTCLoanCalculator = () => {
                   {finalProfitTotal > finalProfitFull2 ? '+' : ''}{formatPLN(finalProfitTotal - finalProfitFull2)}
                 </span>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Inflation-adjusted Results */}
+      <div className="mb-10 p-6 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border-2 border-amber-200">
+        <h2 className="text-2xl font-semibold mb-6 flex items-center text-amber-800">
+          📊 Wyniki po korekcie inflacyjnej ({btcStrategy.inflationRate}% rocznie)
+        </h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Strategy Results - Real Values */}
+          <div className="bg-white p-6 rounded-lg">
+            <h3 className="font-semibold mb-4 text-gray-800">Strategia częściowej sprzedaży (realna wartość)</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span>Zysk netto Szczyt 1 (2027):</span>
+                <span className="font-semibold text-green-600">
+                  {formatPLN(btcStrategy.netProfitPeak1Real)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Zysk netto Szczyt 2 (2029):</span>
+                <span className="font-semibold text-green-600">
+                  {formatPLN(btcStrategy.netProfitPeak2Real)}
+                </span>
+              </div>
+              <div className="border-t pt-3 mt-3">
+                <div className="flex justify-between text-lg">
+                  <span className="font-bold">Łączny zysk realny:</span>
+                  <span className="font-bold text-green-600">
+                    {formatPLN(btcStrategy.totalNetProfitReal)}
+                  </span>
+                </div>
+              </div>
+              <div className="text-sm text-gray-600">
+                <p>Nominalna wartość: {formatPLN(btcStrategy.totalNetProfit)}</p>
+                <p>Utrata siły nabywczej: -{formatPercentage((btcStrategy.totalNetProfit - btcStrategy.totalNetProfitReal) / btcStrategy.totalNetProfit)}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Full HODL - Real Values */}
+          <div className="bg-white p-6 rounded-lg">
+            <h3 className="font-semibold mb-4 text-gray-800">Pełne HODL (realna wartość)</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span>Sprzedaż w 2027 (${formatNumber(btcStrategy.btcPeak1)}):</span>
+                <span className="font-semibold text-blue-600">
+                  {formatPLN(btcStrategy.netProfitFull1Real)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Sprzedaż w 2029 (${formatNumber(btcStrategy.btcPeak2)}):</span>
+                <span className="font-semibold text-blue-600">
+                  {formatPLN(btcStrategy.netProfitFull2Real)}
+                </span>
+              </div>
+              <div className="border-t pt-3 mt-3">
+                <div className="flex justify-between text-lg">
+                  <span className="font-bold">Obligacje (realne):</span>
+                  <span className="font-bold text-green-600">
+                    {formatPLN(btcStrategy.bondsNetReturnReal)}
+                  </span>
+                </div>
+              </div>
+              <div className="text-sm text-gray-600">
+                <p>Nominalna wartość: {formatPLN(btcStrategy.bondsNetReturn)}</p>
+                <p>Utrata siły nabywczej: -{formatPercentage((btcStrategy.bondsNetReturn - btcStrategy.bondsNetReturnReal) / btcStrategy.bondsNetReturn)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Inflation Impact Summary */}
+        <div className="mt-6 p-4 bg-white rounded-lg">
+          <h4 className="font-semibold mb-3 text-amber-800">💰 Wpływ inflacji na strategię</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div>
+              <p className="font-semibold">Do 2027 (2 lata):</p>
+              <p>Inflacja skumulowana: {formatPercentage((btcStrategy.inflationFactor2027 - 1))}</p>
+              <p>1 PLN dziś = {(1/btcStrategy.inflationFactor2027).toFixed(2)} PLN realnie</p>
+            </div>
+            <div>
+              <p className="font-semibold">Do 2029 (4 lata):</p>
+              <p>Inflacja skumulowana: {formatPercentage((btcStrategy.inflationFactor2029 - 1))}</p>
+              <p>1 PLN dziś = {(1/btcStrategy.inflationFactor2029).toFixed(2)} PLN realnie</p>
+            </div>
+            <div>
+              <p className="font-semibold text-amber-700">Kluczowa obserwacja:</p>
+              <p>Dług {loanCalcs.loanAmount.toLocaleString()} PLN będzie "wart" realnie mniej z czasem</p>
+              <p>W 2029: ~{Math.round(loanCalcs.loanAmount / btcStrategy.inflationFactor2029).toLocaleString()} PLN dzisiejszej siły nabywczej</p>
             </div>
           </div>
         </div>

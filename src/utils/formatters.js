@@ -24,4 +24,8 @@ export const formatPercentage = (value, decimals = 1) => {
 
 export const formatBTC = (value, decimals = 4) => {
   return `${value.toFixed(decimals)} BTC`;
+};
+
+export const formatNumber = (value) => {
+  return new Intl.NumberFormat('pl-PL').format(value);
 }; 

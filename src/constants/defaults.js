@@ -11,7 +11,8 @@ export const DEFAULT_VALUES = {
   sellAtPeak1: 50,
   monthlyDCA: 0,
   bondsRate: 6.0,
-  bondsAmount: 80000
+  bondsAmount: 80000,
+  inflationRate: 4.0
 };
 
 export const TAX_RATES = {
