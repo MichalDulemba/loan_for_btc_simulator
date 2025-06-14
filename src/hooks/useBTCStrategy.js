@@ -142,6 +142,11 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
   const netProfit2035 = grossProfit2035 - tax2035;
   const netProfit2040 = grossProfit2040 - tax2040;
 
+  // Total cost calculations for long-term scenarios
+  const totalCost2030 = (btcAmount * averageBuyPrice * usdPlnRate) + (purchaseStrategy === 'lump' || purchaseStrategy === 'loan-dca' ? totalInterest : 0);
+  const totalCost2035 = (btcAmount * averageBuyPrice * usdPlnRate) + (purchaseStrategy === 'lump' || purchaseStrategy === 'loan-dca' ? totalInterest : 0);
+  const totalCost2040 = (btcAmount * averageBuyPrice * usdPlnRate) + (purchaseStrategy === 'lump' || purchaseStrategy === 'loan-dca' ? totalInterest : 0);
+
   // Total results
   const totalNetProfit = netProfitPeak1 + netProfitPeak2;
 
@@ -169,26 +174,39 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
   const sp500NetReturn = sp500CompoundReturns - sp500Tax;
 
   // Inflation-adjusted calculations (real values)
+  // Inflation factor = (1 + inflation_rate)^years
   const inflationFactor2027 = Math.pow(1 + (inflationRate || 0) / 100, 2); // 2 years to peak 1
   const inflationFactor2029 = Math.pow(1 + (inflationRate || 0) / 100, 4); // 4 years to peak 2
   const inflationFactor2030 = Math.pow(1 + (inflationRate || 0) / 100, 5); // 5 years to 2030
   const inflationFactor2035 = Math.pow(1 + (inflationRate || 0) / 100, 10); // 10 years to 2035
   const inflationFactor2040 = Math.pow(1 + (inflationRate || 0) / 100, 15); // 15 years to 2040
   
-  // Real values (inflation-adjusted)
-  const netProfitPeak1Real = inflationFactor2027 > 0 ? netProfitPeak1 / inflationFactor2027 : netProfitPeak1;
-  const netProfitPeak2Real = inflationFactor2029 > 0 ? netProfitPeak2 / inflationFactor2029 : netProfitPeak2;
+  // Real values (inflation-adjusted) - proper calculation
+  // Real profit = Nominal profit - Inflation impact
+  // Inflation impact = Nominal profit * (1 - 1/inflation_factor)
+  // This gives us the purchasing power loss due to inflation
+  const inflationImpact2027 = netProfitPeak1 * (1 - 1/inflationFactor2027);
+  const inflationImpact2029 = netProfitPeak2 * (1 - 1/inflationFactor2029);
+  const inflationImpact2030 = netProfit2030 * (1 - 1/inflationFactor2030);
+  const inflationImpact2035 = netProfit2035 * (1 - 1/inflationFactor2035);
+  const inflationImpact2040 = netProfit2040 * (1 - 1/inflationFactor2040);
+  
+  // Real profits (inflation-adjusted)
+  const netProfitPeak1Real = netProfitPeak1 - inflationImpact2027;
+  const netProfitPeak2Real = netProfitPeak2 - inflationImpact2029;
   const totalNetProfitReal = netProfitPeak1Real + netProfitPeak2Real;
   
-  const netProfit2030Real = inflationFactor2030 > 0 ? netProfit2030 / inflationFactor2030 : netProfit2030;
-  const netProfit2035Real = inflationFactor2035 > 0 ? netProfit2035 / inflationFactor2035 : netProfit2035;
-  const netProfit2040Real = inflationFactor2040 > 0 ? netProfit2040 / inflationFactor2040 : netProfit2040;
+  const netProfit2030Real = netProfit2030 - inflationImpact2030;
+  const netProfit2035Real = netProfit2035 - inflationImpact2035;
+  const netProfit2040Real = netProfit2040 - inflationImpact2040;
   
-  const netProfitFull1Real = inflationFactor2027 > 0 ? netProfitFull1 / inflationFactor2027 : netProfitFull1;
-  const netProfitFull2Real = inflationFactor2029 > 0 ? netProfitFull2 / inflationFactor2029 : netProfitFull2;
+  // Full strategy real profits
+  const netProfitFull1Real = netProfitFull1 - (netProfitFull1 * (1 - 1/inflationFactor2027));
+  const netProfitFull2Real = netProfitFull2 - (netProfitFull2 * (1 - 1/inflationFactor2029));
   
-  const bondsNetReturnReal = Math.pow(1 + (inflationRate || 0) / 100, loanYears) > 0 ? 
-    bondsNetReturn / Math.pow(1 + (inflationRate || 0) / 100, loanYears) : bondsNetReturn;
+  // Bonds real return
+  const bondsInflationFactor = Math.pow(1 + (inflationRate || 0) / 100, loanYears);
+  const bondsNetReturnReal = bondsNetReturn - (bondsNetReturn * (1 - 1/bondsInflationFactor));
 
   return {
     // State
@@ -296,6 +314,16 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
     inflationFactor2029,
     inflationFactor2030,
     inflationFactor2035,
-    inflationFactor2040
+    inflationFactor2040,
+
+    // Total cost calculations
+    totalCost2030,
+    totalCost2035,
+    totalCost2040,
+
+    // Inflation-adjusted profit calculations (aliases for compatibility)
+    inflationAdjustedProfit2030: netProfit2030Real,
+    inflationAdjustedProfit2035: netProfit2035Real,
+    inflationAdjustedProfit2040: netProfit2040Real
   };
 }; 

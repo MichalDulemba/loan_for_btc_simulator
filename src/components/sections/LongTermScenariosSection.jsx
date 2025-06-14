@@ -1,4 +1,3 @@
-import React from 'react';
 import { Calendar } from 'lucide-react';
 import { formatPLN, formatUSD } from '../../utils/formatters';
 
@@ -11,11 +10,11 @@ const LongTermScenariosSection = ({ btcStrategy }) => (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {/* 2030 Scenario */}
       <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200 shadow-md hover:shadow-lg transition-all duration-300">
-        <h3 className="font-semibold mb-4 text-primary">2030 - {formatUSD(btcStrategy.btcPeak2)}</h3>
+        <h3 className="font-semibold mb-4 text-primary">2030 - {formatUSD(btcStrategy.btcPeak2030)}</h3>
         <div className="space-y-3">
           <div className="flex justify-between">
             <span className="text-secondary">Wartość BTC:</span>
-            <span className="font-semibold text-primary">{formatPLN(btcStrategy.value2030)}</span>
+            <span className="font-semibold text-primary">{formatPLN(btcStrategy.valueAt2030)}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-secondary">Koszt całkowity:</span>
@@ -28,7 +27,7 @@ const LongTermScenariosSection = ({ btcStrategy }) => (
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-secondary">Inflacja skorygowana:</span>
+            <span className="text-secondary">Skorygowane o inflację:</span>
             <span className={`font-semibold ${btcStrategy.inflationAdjustedProfit2030 >= 0 ? 'text-success' : 'text-danger'}`}>
               {formatPLN(btcStrategy.inflationAdjustedProfit2030)}
             </span>
@@ -37,11 +36,11 @@ const LongTermScenariosSection = ({ btcStrategy }) => (
       </div>
       {/* 2035 Scenario */}
       <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg border border-purple-200 shadow-md hover:shadow-lg transition-all duration-300">
-        <h3 className="font-semibold mb-4 text-primary">2035 - {formatUSD(btcStrategy.btcPeak2035)}</h3>
+        <h3 className="font-semibold mb-4 text-primary">2035 - {formatUSD(btcStrategy.finalBtcPeak2035)}</h3>
         <div className="space-y-3">
           <div className="flex justify-between">
             <span className="text-secondary">Wartość BTC:</span>
-            <span className="font-semibold text-primary">{formatPLN(btcStrategy.value2035)}</span>
+            <span className="font-semibold text-primary">{formatPLN(btcStrategy.valueAt2035)}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-secondary">Koszt całkowity:</span>
@@ -54,7 +53,7 @@ const LongTermScenariosSection = ({ btcStrategy }) => (
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-secondary">Inflacja skorygowana:</span>
+            <span className="text-secondary">Skorygowane o inflację:</span>
             <span className={`font-semibold ${btcStrategy.inflationAdjustedProfit2035 >= 0 ? 'text-success' : 'text-danger'}`}>
               {formatPLN(btcStrategy.inflationAdjustedProfit2035)}
             </span>
@@ -63,11 +62,11 @@ const LongTermScenariosSection = ({ btcStrategy }) => (
       </div>
       {/* 2040 Scenario */}
       <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg border border-green-200 shadow-md hover:shadow-lg transition-all duration-300">
-        <h3 className="font-semibold mb-4 text-primary">2040 - {formatUSD(btcStrategy.btcPeak2040)}</h3>
+        <h3 className="font-semibold mb-4 text-primary">2040 - {formatUSD(btcStrategy.finalBtcPeak2040)}</h3>
         <div className="space-y-3">
           <div className="flex justify-between">
             <span className="text-secondary">Wartość BTC:</span>
-            <span className="font-semibold text-primary">{formatPLN(btcStrategy.value2040)}</span>
+            <span className="font-semibold text-primary">{formatPLN(btcStrategy.valueAt2040)}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-secondary">Koszt całkowity:</span>
@@ -80,7 +79,7 @@ const LongTermScenariosSection = ({ btcStrategy }) => (
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-secondary">Inflacja skorygowana:</span>
+            <span className="text-secondary">Skorygowane o inflację:</span>
             <span className={`font-semibold ${btcStrategy.inflationAdjustedProfit2040 >= 0 ? 'text-success' : 'text-danger'}`}>
               {formatPLN(btcStrategy.inflationAdjustedProfit2040)}
             </span>

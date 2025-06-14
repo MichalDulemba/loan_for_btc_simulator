@@ -1,4 +1,3 @@
-import React from 'react';
 import { useLoanCalculations } from '../hooks/useLoanCalculations';
 import { useBTCStrategy } from '../hooks/useBTCStrategy';
 import { useTheme } from '../hooks/useTheme';
@@ -39,7 +38,7 @@ const BTCLoanCalculator = () => {
     <div className="relative w-full max-w-6xl mx-auto p-8 tech-card rounded-xl fade-in">
       <ThemeToggle />
       <div className="mb-10">
-        <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <h1 className="text-4xl font-bold mb-4 text-blue-600">
           Kalkulator kredytów na BTC - Symulator strategii
         </h1>
         <p className="text-lg text-secondary">
