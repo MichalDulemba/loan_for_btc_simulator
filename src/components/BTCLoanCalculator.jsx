@@ -4,6 +4,7 @@ import { useTheme } from '../hooks/useTheme';
 import ThemeToggle from './ThemeToggle';
 import RiskWarning from './RiskWarning';
 import PurchaseStrategySection from './sections/PurchaseStrategySection';
+import EconomicParametersSection from './sections/EconomicParametersSection';
 import BTCParametersSection from './sections/BTCParametersSection';
 import LongTermScenariosSection from './sections/LongTermScenariosSection';
 import ComparisonChartsSection from './sections/ComparisonChartsSection';
@@ -24,33 +25,59 @@ const BTCLoanCalculator = () => {
 
   // Projection data for charts with new scenarios
   const projectionData = [
-    { year: 2025, price: btcStrategy.btcBuyPrice, value: loanCalcs.loanAmount, bonds: loanCalcs.bondsAmount, sp500: loanCalcs.loanAmount, event: 'Zakup' },
-    { year: 2026, price: btcStrategy.btcBuyPrice * 0.9, value: loanCalcs.loanAmount * 0.9, bonds: loanCalcs.bondsAmount * Math.pow(1 + loanCalcs.bondsRate / 100, 1), sp500: loanCalcs.loanAmount * Math.pow(1 + btcStrategy.sp500Return / 100, 1), event: 'Bessa' },
-    { year: 2027, price: btcStrategy.btcPeak1, value: btcStrategy.valueAtPeak1Full, bonds: loanCalcs.bondsAmount * Math.pow(1 + loanCalcs.bondsRate / 100, 2), sp500: loanCalcs.loanAmount * Math.pow(1 + btcStrategy.sp500Return / 100, 2), event: `Szczyt 1 (sprzedaż ${btcStrategy.sellAtPeak1}%)` },
-    { year: 2028, price: btcStrategy.btcPeak1 * 0.4, value: btcStrategy.valueRemainingPeak2 * (btcStrategy.btcPeak1 * 0.4 / btcStrategy.btcPeak2), bonds: loanCalcs.bondsAmount * Math.pow(1 + loanCalcs.bondsRate / 100, 3), sp500: loanCalcs.loanAmount * Math.pow(1 + btcStrategy.sp500Return / 100, 3), event: 'Korekta' },
-    { year: 2029, price: btcStrategy.btcPeak2, value: btcStrategy.valueRemainingPeak2, bonds: loanCalcs.bondsAmount * Math.pow(1 + loanCalcs.bondsRate / 100, 4), sp500: loanCalcs.loanAmount * Math.pow(1 + btcStrategy.sp500Return / 100, 4), event: `Szczyt 2 (${100-btcStrategy.sellAtPeak1}% BTC)` },
-    { year: 2030, price: btcStrategy.btcPeak2030, value: btcStrategy.valueAt2030, bonds: loanCalcs.bondsAmount * Math.pow(1 + loanCalcs.bondsRate / 100, 5), sp500: loanCalcs.loanAmount * Math.pow(1 + btcStrategy.sp500Return / 100, 5), event: 'Projekcja 2030' },
-    { year: 2035, price: btcStrategy.finalBtcPeak2035, value: btcStrategy.valueAt2035, bonds: loanCalcs.bondsAmount * Math.pow(1 + loanCalcs.bondsRate / 100, 10), sp500: loanCalcs.loanAmount * Math.pow(1 + btcStrategy.sp500Return / 100, 10), event: 'Projekcja 2035' },
-    { year: 2040, price: btcStrategy.finalBtcPeak2040, value: btcStrategy.valueAt2040, bonds: loanCalcs.bondsAmount * Math.pow(1 + loanCalcs.bondsRate / 100, 15), sp500: loanCalcs.loanAmount * Math.pow(1 + btcStrategy.sp500Return / 100, 15), event: 'Projekcja 2040' }
+    { year: 2025, value: 0, price: btcStrategy.btcBuyPrice, bonds: loanCalcs.bondsAmount },
+    { year: 2026, value: btcStrategy.valueAtPeak1Full, price: btcStrategy.btcPeak1, bonds: loanCalcs.bondsAmount * Math.pow(1 + loanCalcs.bondsRate / 100, 1) },
+    { year: 2030, value: btcStrategy.valueAtPeak2Full, price: btcStrategy.btcPeak2, bonds: loanCalcs.bondsAmount * Math.pow(1 + loanCalcs.bondsRate / 100, 5) },
+    { year: 2035, value: btcStrategy.valueAt2035, price: btcStrategy.finalBtcPeak2035, bonds: loanCalcs.bondsAmount * Math.pow(1 + loanCalcs.bondsRate / 100, 10) },
+    { year: 2040, value: btcStrategy.valueAt2040, price: btcStrategy.finalBtcPeak2040, bonds: loanCalcs.bondsAmount * Math.pow(1 + loanCalcs.bondsRate / 100, 15) }
   ];
 
   return (
-    <div className="relative w-full max-w-6xl mx-auto p-8 tech-card rounded-xl fade-in">
-      <ThemeToggle />
-      <div className="mb-10">
-        <h1 className="text-4xl font-bold mb-4 text-blue-600">
-          Kalkulator kredytów na BTC - Symulator strategii
-        </h1>
-        <p className="text-lg text-secondary">
-          Testuj różne scenariusze finansowania zakupu Bitcoin kredytami bankowymi
-        </p>
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-primary">
+            🚀 Kalkulator Kredytu BTC
+          </h1>
+          <ThemeToggle />
+        </div>
+
+        <RiskWarning />
+
+        {/* Purchase Strategy Section */}
+        <PurchaseStrategySection 
+          btcStrategy={btcStrategy}
+          loanCalcs={loanCalcs}
+        />
+
+        {/* Economic Parameters Section */}
+        <EconomicParametersSection 
+          btcStrategy={btcStrategy}
+        />
+
+        {/* BTC Parameters Section */}
+        <BTCParametersSection 
+          btcStrategy={btcStrategy}
+        />
+
+        {/* Strategy Summary Section */}
+        <StrategySummarySection 
+          btcStrategy={btcStrategy}
+          loanCalcs={loanCalcs}
+        />
+
+        {/* Long-term Scenarios Section */}
+        <LongTermScenariosSection 
+          btcStrategy={btcStrategy}
+        />
+
+        {/* Comparison Charts Section */}
+        <ComparisonChartsSection 
+          btcStrategy={btcStrategy}
+          loanCalcs={loanCalcs}
+          projectionData={projectionData}
+        />
       </div>
-      <RiskWarning />
-      <PurchaseStrategySection btcStrategy={btcStrategy} loanCalcs={loanCalcs} />
-      <BTCParametersSection btcStrategy={btcStrategy} />
-      <LongTermScenariosSection btcStrategy={btcStrategy} />
-      <ComparisonChartsSection projectionData={projectionData} loanCalcs={loanCalcs} btcStrategy={btcStrategy} />
-      <StrategySummarySection btcStrategy={btcStrategy} loanCalcs={loanCalcs} />
     </div>
   );
 };

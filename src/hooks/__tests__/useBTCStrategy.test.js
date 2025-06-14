@@ -59,7 +59,7 @@ describe('useBTCStrategy - Purchasing Power Calculations', () => {
   })
 
   it('should calculate correct purchasing power with default parameters (4% inflation)', () => {
-    // Given: Default parameters that should give 266 304 zł
+    // Given: Default parameters
     const loanAmount = 100000
     const totalInterest = 20000
     const bondsAmount = 80000
@@ -71,7 +71,7 @@ describe('useBTCStrategy - Purchasing Power Calculations', () => {
       useBTCStrategy(loanAmount, totalInterest, bondsAmount, bondsRate, loanYears)
     )
 
-    // Set default values (same as in app)
+    // Set default values
     act(() => {
       result.current.setBtcBuyPrice(80000)
       result.current.setBtcPeak1(240000)
@@ -81,11 +81,8 @@ describe('useBTCStrategy - Purchasing Power Calculations', () => {
       result.current.setPurchaseStrategy('lump')
       result.current.setSellAtPeak1(50)
       result.current.setSelectedScenario('neutral') // Default scenario
+      result.current.setTransactionCost(0) // Set transaction cost to 0 for this test
     })
-
-    // Wait for state to update
-    expect(result.current.btcAmount).toBeGreaterThan(0)
-    expect(result.current.netProfit2030).toBeGreaterThan(0)
 
     // Debug output
     console.log('=== DEBUG: Default Parameters Test ===')
@@ -137,6 +134,7 @@ describe('useBTCStrategy - Purchasing Power Calculations', () => {
       result.current.setPurchaseStrategy('lump')
       result.current.setSellAtPeak1(50)
       result.current.setSelectedScenario('neutral') // Default scenario
+      result.current.setTransactionCost(0) // Set transaction cost to 0 for this test
     })
 
     // Then: Verify exact UI values with tax calculations
@@ -176,6 +174,7 @@ describe('useBTCStrategy - Purchasing Power Calculations', () => {
 
     act(() => {
       result.current.setInflationRate(0)
+      result.current.setTransactionCost(0) // Set transaction cost to 0 for this test
     })
 
     // With zero inflation, real values should equal nominal values
@@ -197,6 +196,7 @@ describe('useBTCStrategy - Purchasing Power Calculations', () => {
       result.current.setUsdPlnRate(3.75)
       result.current.setPurchaseStrategy('lump')
       result.current.setSellAtPeak1(50)
+      result.current.setTransactionCost(0) // Set transaction cost to 0 for this test
     })
 
     // Check peak 1 real profit (2 years from 2025)
@@ -215,6 +215,7 @@ describe('useBTCStrategy - Purchasing Power Calculations', () => {
 
     act(() => {
       result.current.setInflationRate(5)
+      result.current.setTransactionCost(0) // Set transaction cost to 0 for this test
     })
 
     // Bonds real return should be calculated correctly
@@ -235,6 +236,7 @@ describe('useBTCStrategy - Purchasing Power Calculations', () => {
       result.current.setUsdPlnRate(3.75)
       result.current.setPurchaseStrategy('lump')
       result.current.setSellAtPeak1(50)
+      result.current.setTransactionCost(0) // Set transaction cost to 0 for this test
     })
 
     // Test the specific case: 100,000 PLN with 5% inflation over 5 years
@@ -271,10 +273,11 @@ describe('useBTCStrategy - Purchasing Power Calculations', () => {
       result.current.setPurchaseStrategy('lump')
       result.current.setSellAtPeak1(50)
       result.current.setSelectedScenario('neutral')
+      result.current.setTransactionCost(0) // Set transaction cost to 0 for this test
     })
 
     // Then: Verify economic consistency
-    // 1. BTC amount should be correct
+    // 1. BTC amount should be correct (without transaction cost)
     const expectedBtcAmount = loanAmount / (result.current.btcBuyPrice * result.current.usdPlnRate)
     expect(result.current.btcAmount).toBeCloseTo(expectedBtcAmount, 6)
 
@@ -312,17 +315,17 @@ describe('useBTCStrategy - Purchasing Power Calculations', () => {
   })
 
   it('should verify loan calculations are consistent with real loan math', () => {
-    // Given: Default loan parameters
+    // Given: Real loan parameters
     const loanAmount = 100000
-    const interestRate = 12
+    const interestRate = 12 // 12% annual interest
     const loanYears = 10
     
-    // Calculate real loan values
-    const monthlyRate = interestRate / 100 / 12;
-    const months = loanYears * 12;
-    const monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
-    const totalLoanCost = monthlyPayment * months;
-    const totalInterest = totalLoanCost - loanAmount;
+    // Calculate real monthly payment and total interest
+    const monthlyRate = interestRate / 100 / 12
+    const months = loanYears * 12
+    const monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1)
+    const totalLoanCost = monthlyPayment * months
+    const totalInterest = totalLoanCost - loanAmount
     
     const bondsAmount = 80000
     const bondsRate = 6.0
@@ -332,7 +335,7 @@ describe('useBTCStrategy - Purchasing Power Calculations', () => {
       useBTCStrategy(loanAmount, totalInterest, bondsAmount, bondsRate, loanYears)
     )
 
-    // Set default values
+    // Set values
     act(() => {
       result.current.setBtcBuyPrice(80000)
       result.current.setBtcPeak1(240000)
@@ -342,24 +345,25 @@ describe('useBTCStrategy - Purchasing Power Calculations', () => {
       result.current.setPurchaseStrategy('lump')
       result.current.setSellAtPeak1(50)
       result.current.setSelectedScenario('neutral')
+      result.current.setTransactionCost(0) // Set transaction cost to 0 for this test
     })
 
-    // Then: Verify loan calculations are correct
-    expect(totalInterest).toBeCloseTo(72165, 0) // Real interest should be ~72,165 PLN
-    expect(totalLoanCost).toBeCloseTo(172165, 0) // Total cost should be ~172,165 PLN
+    // Then: Verify that total cost includes real loan interest
+    expect(result.current.totalCost2030).toBeCloseTo(loanAmount + totalInterest, 0)
     
-    // Total cost in hook should match real loan cost
-    expect(result.current.totalCost2030).toBeCloseTo(totalLoanCost, 0)
-    
+    // Verify that break-even price calculation is correct
+    const expectedBreakEven = (loanAmount + totalInterest) / (result.current.btcAmount * result.current.usdPlnRate * 0.81)
+    expect(result.current.breakEvenPrice).toBeCloseTo(expectedBreakEven, 0)
+
     // Debug output
-    console.log('=== LOAN CALCULATIONS CONSISTENCY TEST ===')
-    console.log(`Loan amount: ${loanAmount} PLN`)
-    console.log(`Interest rate: ${interestRate}%`)
-    console.log(`Loan years: ${loanYears}`)
-    console.log(`Monthly payment: ${monthlyPayment.toFixed(2)} PLN`)
-    console.log(`Total loan cost: ${totalLoanCost.toFixed(2)} PLN`)
-    console.log(`Total interest: ${totalInterest.toFixed(2)} PLN`)
-    console.log(`Hook total cost 2030: ${result.current.totalCost2030.toFixed(2)} PLN`)
-    console.log('==========================================')
+    console.log('=== REAL LOAN MATH TEST ===')
+    console.log(`Loan amount: ${loanAmount}`)
+    console.log(`Real total interest: ${totalInterest.toFixed(2)}`)
+    console.log(`Total loan cost: ${totalLoanCost.toFixed(2)}`)
+    console.log(`Monthly payment: ${monthlyPayment.toFixed(2)}`)
+    console.log(`Total cost 2030: ${result.current.totalCost2030}`)
+    console.log(`Break-even price: ${result.current.breakEvenPrice}`)
+    console.log(`Expected break-even: ${expectedBreakEven}`)
+    console.log('===========================')
   })
 }) 

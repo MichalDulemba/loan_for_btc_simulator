@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { calculatePurchasingPower } from '../calculations'
+import { calculatePurchasingPower, calculateBreakEvenPrice } from '../calculations'
 
 describe('calculatePurchasingPower', () => {
   it('should calculate correct purchasing power for 100,000 PLN with 5% inflation over 5 years', () => {
@@ -104,5 +104,97 @@ describe('calculatePurchasingPower', () => {
     
     expect(functionResult).toBe(realValue)
     expect(functionResult).toBeCloseTo(78352.62, 2)
+  })
+})
+
+describe('calculateBreakEvenPrice', () => {
+  it('should calculate break-even price without transaction cost', () => {
+    const loanAmount = 100000
+    const totalInterest = 20000
+    const btcAmount = 0.5
+    const usdPlnRate = 4
+    
+    const breakEvenPrice = calculateBreakEvenPrice(loanAmount, totalInterest, btcAmount, usdPlnRate, 0)
+    
+    // Expected: (100000 + 20000) / (0.5 * 4 * 0.81) = 120000 / 1.62 = 74,074 USD
+    expect(breakEvenPrice).toBeCloseTo(74074.07, 0)
+  })
+
+  it('should calculate break-even price with 1% transaction cost', () => {
+    const loanAmount = 100000
+    const totalInterest = 20000
+    const btcAmount = 0.5
+    const usdPlnRate = 4
+    const transactionCost = 1
+    
+    const breakEvenPrice = calculateBreakEvenPrice(loanAmount, totalInterest, btcAmount, usdPlnRate, transactionCost)
+    
+    // Expected: (100000 + 20000) / (0.5 * 4 * 0.81 * 0.99) = 120000 / 1.6038 = 74,822 USD
+    expect(breakEvenPrice).toBeCloseTo(74822.29, 0)
+  })
+
+  it('should calculate break-even price with 2% transaction cost', () => {
+    const loanAmount = 100000
+    const totalInterest = 20000
+    const btcAmount = 0.5
+    const usdPlnRate = 4
+    const transactionCost = 2
+    
+    const breakEvenPrice = calculateBreakEvenPrice(loanAmount, totalInterest, btcAmount, usdPlnRate, transactionCost)
+    
+    // Expected: (100000 + 20000) / (0.5 * 4 * 0.81 * 0.98) = 120000 / 1.5876 = 75,585 USD
+    // Using more precise calculation and tolerance
+    const expectedValue = (loanAmount + totalInterest) / (btcAmount * usdPlnRate * 0.81 * (1 - transactionCost / 100))
+    expect(breakEvenPrice).toBeCloseTo(expectedValue, 1)
+  })
+
+  it('should return 0 when btcAmount is 0', () => {
+    const breakEvenPrice = calculateBreakEvenPrice(100000, 20000, 0, 4, 1)
+    expect(breakEvenPrice).toBe(0)
+  })
+
+  it('should return 0 when usdPlnRate is 0', () => {
+    const breakEvenPrice = calculateBreakEvenPrice(100000, 20000, 0.5, 0, 1)
+    expect(breakEvenPrice).toBe(0)
+  })
+
+  it('should handle high transaction costs', () => {
+    const loanAmount = 100000
+    const totalInterest = 20000
+    const btcAmount = 0.5
+    const usdPlnRate = 4
+    const transactionCost = 5 // 5% transaction cost
+    
+    const breakEvenPrice = calculateBreakEvenPrice(loanAmount, totalInterest, btcAmount, usdPlnRate, transactionCost)
+    
+    // Expected: (100000 + 20000) / (0.5 * 4 * 0.81 * 0.95) = 120000 / 1.539 = 77,973 USD
+    // Using more precise calculation and tolerance
+    const expectedValue = (loanAmount + totalInterest) / (btcAmount * usdPlnRate * 0.81 * (1 - transactionCost / 100))
+    expect(breakEvenPrice).toBeCloseTo(expectedValue, 1)
+  })
+
+  it('should verify break-even calculation with manual calculation', () => {
+    const loanAmount = 100000
+    const totalInterest = 20000
+    const btcAmount = 0.5
+    const usdPlnRate = 4
+    const transactionCost = 1
+    
+    // Manual calculation
+    const totalCost = loanAmount + totalInterest
+    const denominator = btcAmount * usdPlnRate * 0.81 * (1 - transactionCost / 100)
+    const expectedBreakEven = totalCost / denominator
+    
+    const functionResult = calculateBreakEvenPrice(loanAmount, totalInterest, btcAmount, usdPlnRate, transactionCost)
+    
+    console.log('=== BREAK-EVEN TEST CASE ===')
+    console.log(`Input: Loan ${loanAmount}, Interest ${totalInterest}, BTC ${btcAmount}, Rate ${usdPlnRate}, Cost ${transactionCost}%`)
+    console.log(`Total cost: ${totalCost}`)
+    console.log(`Denominator: ${btcAmount} * ${usdPlnRate} * 0.81 * ${1 - transactionCost/100} = ${denominator}`)
+    console.log(`Expected: ${totalCost} / ${denominator} = ${expectedBreakEven}`)
+    console.log(`Actual: ${functionResult}`)
+    console.log('============================')
+    
+    expect(functionResult).toBeCloseTo(expectedBreakEven, 1)
   })
 }) 

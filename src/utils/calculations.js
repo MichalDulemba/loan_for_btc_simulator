@@ -6,8 +6,12 @@ export const calculateMonthlyPayment = (principal, rate, years) => {
   return principal * (monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
 };
 
-export const calculateBreakEvenPrice = (loanAmount, totalInterest, btcAmount, usdPlnRate) => {
-  const denominator = btcAmount * usdPlnRate * 0.81; // 0.81 = po podatku 19%
+export const calculateBreakEvenPrice = (loanAmount, totalInterest, btcAmount, usdPlnRate, transactionCost = 0) => {
+  // Include transaction costs in break-even calculation
+  // Buy cost: btcAmount * price * usdPlnRate * (1 + transactionCost/100)
+  // Sell cost: btcAmount * price * usdPlnRate * (1 - transactionCost/100)
+  // Break-even: (loanAmount + totalInterest) / (btcAmount * usdPlnRate * 0.81 * (1 - transactionCost/100))
+  const denominator = btcAmount * usdPlnRate * 0.81 * (1 - transactionCost / 100); // 0.81 = po podatku 19%
   return denominator > 0 ? (loanAmount + totalInterest) / denominator : 0;
 };
 

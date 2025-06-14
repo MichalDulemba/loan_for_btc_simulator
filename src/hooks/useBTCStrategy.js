@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { calculateBreakEvenPrice, calculateTax, calculateROI, calculateCompoundReturns, calculatePurchasingPower } from '../utils/calculations';
 import { DEFAULT_VALUES, TAX_RATES } from '../constants/defaults';
 import { SCENARIOS } from '../constants/scenarios';
@@ -19,21 +19,37 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
   const [dcaAmount, setDcaAmount] = useState(20000);
   const [savingsAmount, setSavingsAmount] = useState(100000); // Default savings amount
   const [sp500Return, setSp500Return] = useState(10); // Default S&P500 return
+  const [transactionCost, setTransactionCost] = useState(1); // Default 1% transaction cost
+  const [yearlyChanges, setYearlyChanges] = useState({}); // Percentage changes per year
 
-  // Get scenario prices
+  // Calculate BTC prices based on yearly percentage changes
+  const calculatedPrices = useMemo(() => {
+    const prices = {};
+    let currentPrice = btcBuyPrice;
+    
+    for (let year = 1; year <= 15; year++) {
+      const change = yearlyChanges[year] || 0;
+      currentPrice = currentPrice * (1 + change / 100);
+      prices[year] = currentPrice;
+    }
+    
+    return prices;
+  }, [btcBuyPrice, yearlyChanges]);
+
+  // Get scenario prices or use calculated prices
   const scenario = SCENARIOS[selectedScenario];
-  const btcPeak2030 = scenario?.peak2030 || 400000;
-  // Use custom values if set, otherwise use scenario values
-  const finalBtcPeak2035 = btcPeak2035 || scenario?.peak2035 || 800000;
-  const finalBtcPeak2040 = btcPeak2040 || scenario?.peak2040 || 1200000;
+  const btcPeak2030 = Object.keys(yearlyChanges).length > 0 ? calculatedPrices[5] : (scenario?.peak2030 || 400000);
+  const finalBtcPeak2035 = Object.keys(yearlyChanges).length > 0 ? calculatedPrices[10] : (btcPeak2035 || scenario?.peak2035 || 800000);
+  const finalBtcPeak2040 = Object.keys(yearlyChanges).length > 0 ? calculatedPrices[15] : (btcPeak2040 || scenario?.peak2040 || 1200000);
 
   // BTC calculations based on purchase strategy
   let btcAmount, averageBuyPrice, loanBtcAmount, dcaBtcAmount, dcaTotalSpent;
   
   if (purchaseStrategy === 'lump') {
     // One-time purchase with loan
-    btcAmount = (btcBuyPrice > 0 && usdPlnRate > 0) ? loanAmount / (btcBuyPrice * usdPlnRate) : 0;
-    averageBuyPrice = btcBuyPrice;
+    const effectiveBuyPrice = btcBuyPrice * (1 + transactionCost / 100); // Include transaction cost
+    btcAmount = (effectiveBuyPrice > 0 && usdPlnRate > 0) ? loanAmount / (effectiveBuyPrice * usdPlnRate) : 0;
+    averageBuyPrice = effectiveBuyPrice;
     loanBtcAmount = btcAmount;
     dcaBtcAmount = 0;
     dcaTotalSpent = 0;
@@ -52,8 +68,9 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
     
     for (let month = 0; month < dcaMonths; month++) {
       const currentPrice = btcBuyPrice + (priceChange * month);
-      if (currentPrice > 0 && usdPlnRate > 0) {
-        const btcBoughtThisMonth = monthlyDcaAmount / (currentPrice * usdPlnRate);
+      const effectivePrice = currentPrice * (1 + transactionCost / 100); // Include transaction cost
+      if (effectivePrice > 0 && usdPlnRate > 0) {
+        const btcBoughtThisMonth = monthlyDcaAmount / (effectivePrice * usdPlnRate);
         totalBtcBought += btcBoughtThisMonth;
         totalSpent += monthlyDcaAmount;
       }
@@ -65,7 +82,8 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
     dcaBtcAmount = btcAmount;
   } else if (purchaseStrategy === 'loan-dca') {
     // Loan + DCA strategy: use loan as base + additional DCA
-    loanBtcAmount = (btcBuyPrice > 0 && usdPlnRate > 0) ? loanAmount / (btcBuyPrice * usdPlnRate) : 0;
+    const effectiveBuyPrice = btcBuyPrice * (1 + transactionCost / 100); // Include transaction cost
+    loanBtcAmount = (effectiveBuyPrice > 0 && usdPlnRate > 0) ? loanAmount / (effectiveBuyPrice * usdPlnRate) : 0;
     
     // Additional DCA
     const dcaMonths = dcaYears * 12;
@@ -80,8 +98,9 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
     
     for (let month = 0; month < dcaMonths; month++) {
       const currentPrice = btcBuyPrice + (priceChange * month);
-      if (currentPrice > 0 && usdPlnRate > 0) {
-        const btcBoughtThisMonth = monthlyDcaAmount / (currentPrice * usdPlnRate);
+      const effectivePrice = currentPrice * (1 + transactionCost / 100); // Include transaction cost
+      if (effectivePrice > 0 && usdPlnRate > 0) {
+        const btcBoughtThisMonth = monthlyDcaAmount / (effectivePrice * usdPlnRate);
         dcaBtcBought += btcBoughtThisMonth;
         dcaSpent += monthlyDcaAmount;
       }
@@ -95,27 +114,30 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
     averageBuyPrice = (btcAmount > 0 && usdPlnRate > 0) ? totalSpent / (btcAmount * usdPlnRate) : btcBuyPrice;
   } else if (purchaseStrategy === 'savings') {
     // Lump sum from savings (no loan)
-    btcAmount = (btcBuyPrice > 0 && usdPlnRate > 0) ? savingsAmount / (btcBuyPrice * usdPlnRate) : 0;
-    averageBuyPrice = btcBuyPrice;
+    const effectiveBuyPrice = btcBuyPrice * (1 + transactionCost / 100); // Include transaction cost
+    btcAmount = (effectiveBuyPrice > 0 && usdPlnRate > 0) ? savingsAmount / (effectiveBuyPrice * usdPlnRate) : 0;
+    averageBuyPrice = effectiveBuyPrice;
     loanBtcAmount = 0;
     dcaBtcAmount = 0;
     dcaTotalSpent = 0;
   }
   
-  const breakEvenPrice = calculateBreakEvenPrice(loanAmount, totalInterest, btcAmount, usdPlnRate);
+  const breakEvenPrice = calculateBreakEvenPrice(loanAmount, totalInterest, btcAmount, usdPlnRate, transactionCost);
 
   // Strategy calculations
   const btcSoldPeak1 = btcAmount * (sellAtPeak1 / 100);
   const btcRemainingPeak2 = btcAmount - btcSoldPeak1;
 
-  // Peak 1 calculations
-  const valueSoldPeak1 = btcSoldPeak1 * btcPeak1 * usdPlnRate;
+  // Peak 1 calculations with transaction cost
+  const effectivePeak1Price = btcPeak1 * (1 - transactionCost / 100); // Include selling transaction cost
+  const valueSoldPeak1 = btcSoldPeak1 * effectivePeak1Price * usdPlnRate;
   const grossProfitPeak1 = valueSoldPeak1 - (btcSoldPeak1 * averageBuyPrice * usdPlnRate);
   const taxPeak1 = calculateTax(grossProfitPeak1);
   const netProfitPeak1 = grossProfitPeak1 - taxPeak1;
 
-  // Peak 2 calculations
-  const valueRemainingPeak2 = btcRemainingPeak2 * btcPeak2 * usdPlnRate;
+  // Peak 2 calculations with transaction cost
+  const effectivePeak2Price = btcPeak2 * (1 - transactionCost / 100); // Include selling transaction cost
+  const valueRemainingPeak2 = btcRemainingPeak2 * effectivePeak2Price * usdPlnRate;
   const grossProfitPeak2 = valueRemainingPeak2 - (btcRemainingPeak2 * averageBuyPrice * usdPlnRate);
   const totalGrossProfit = grossProfitPeak1 + grossProfitPeak2;
   
@@ -125,10 +147,14 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
   
   const netProfitPeak2 = grossProfitPeak2 - taxPeak2;
 
-  // Long-term projections (2030, 2035, 2040)
-  const valueAt2030 = btcAmount * btcPeak2030 * usdPlnRate;
-  const valueAt2035 = btcAmount * finalBtcPeak2035 * usdPlnRate;
-  const valueAt2040 = btcAmount * finalBtcPeak2040 * usdPlnRate;
+  // Long-term projections (2030, 2035, 2040) with transaction cost
+  const effectivePeak2030 = btcPeak2030 * (1 - transactionCost / 100);
+  const effectivePeak2035 = finalBtcPeak2035 * (1 - transactionCost / 100);
+  const effectivePeak2040 = finalBtcPeak2040 * (1 - transactionCost / 100);
+  
+  const valueAt2030 = btcAmount * effectivePeak2030 * usdPlnRate;
+  const valueAt2035 = btcAmount * effectivePeak2035 * usdPlnRate;
+  const valueAt2040 = btcAmount * effectivePeak2040 * usdPlnRate;
   
   const grossProfit2030 = valueAt2030 - (btcAmount * averageBuyPrice * usdPlnRate);
   const grossProfit2035 = valueAt2035 - (btcAmount * averageBuyPrice * usdPlnRate);
@@ -151,8 +177,8 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
   const totalNetProfit = netProfitPeak1 + netProfitPeak2;
 
   // Full strategy comparisons
-  const valueAtPeak1Full = btcAmount * btcPeak1 * usdPlnRate;
-  const valueAtPeak2Full = btcAmount * btcPeak2 * usdPlnRate;
+  const valueAtPeak1Full = btcAmount * effectivePeak1Price * usdPlnRate;
+  const valueAtPeak2Full = btcAmount * effectivePeak2Price * usdPlnRate;
   
   const grossProfitFull1 = valueAtPeak1Full - (btcAmount * averageBuyPrice * usdPlnRate);
   const grossProfitFull2 = valueAtPeak2Full - (btcAmount * averageBuyPrice * usdPlnRate);
@@ -224,6 +250,11 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
     setSavingsAmount,
     sp500Return,
     setSp500Return,
+    transactionCost,
+    setTransactionCost,
+    yearlyChanges,
+    setYearlyChanges,
+    calculatedPrices,
 
     // BTC calculations
     btcAmount,
