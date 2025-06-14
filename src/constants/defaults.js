@@ -1,7 +1,7 @@
 // Default values and constants
 
 export const DEFAULT_VALUES = {
-  loanAmount: 300000,
+  loanAmount: 100000,
   interestRate: 12,
   loanYears: 10,
   btcBuyPrice: 80000,

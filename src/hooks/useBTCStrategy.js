@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { calculateBreakEvenPrice, calculateTax, calculateROI, calculateCompoundReturns } from '../utils/calculations';
 import { DEFAULT_VALUES, TAX_RATES } from '../constants/defaults';
+import { SCENARIOS } from '../constants/scenarios';
 
 export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate, loanYears) => {
   const [btcBuyPrice, setBtcBuyPrice] = useState(DEFAULT_VALUES.btcBuyPrice);
@@ -11,6 +12,12 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
   const [payOffLoan, setPayOffLoan] = useState(true);
   const [selectedScenario, setSelectedScenario] = useState('neutral');
   const [inflationRate, setInflationRate] = useState(DEFAULT_VALUES.inflationRate);
+
+  // Get scenario prices
+  const scenario = SCENARIOS[selectedScenario];
+  const btcPeak2030 = scenario?.peak2030 || 400000;
+  const btcPeak2035 = scenario?.peak2035 || 800000;
+  const btcPeak2040 = scenario?.peak2040 || 1200000;
 
   // BTC calculations
   const btcAmount = loanAmount / (btcBuyPrice * usdPlnRate);
@@ -37,6 +44,23 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
   
   const netProfitPeak2 = grossProfitPeak2 - taxPeak2;
 
+  // Long-term projections (2030, 2035, 2040)
+  const valueAt2030 = btcAmount * btcPeak2030 * usdPlnRate;
+  const valueAt2035 = btcAmount * btcPeak2035 * usdPlnRate;
+  const valueAt2040 = btcAmount * btcPeak2040 * usdPlnRate;
+  
+  const grossProfit2030 = valueAt2030 - loanAmount;
+  const grossProfit2035 = valueAt2035 - loanAmount;
+  const grossProfit2040 = valueAt2040 - loanAmount;
+  
+  const tax2030 = calculateTax(grossProfit2030, grossProfit2030 > TAX_RATES.THRESHOLD);
+  const tax2035 = calculateTax(grossProfit2035, grossProfit2035 > TAX_RATES.THRESHOLD);
+  const tax2040 = calculateTax(grossProfit2040, grossProfit2040 > TAX_RATES.THRESHOLD);
+  
+  const netProfit2030 = grossProfit2030 - tax2030;
+  const netProfit2035 = grossProfit2035 - tax2035;
+  const netProfit2040 = grossProfit2040 - tax2040;
+
   // Total results
   const totalNetProfit = netProfitPeak1 + netProfitPeak2;
 
@@ -61,11 +85,18 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
   // Inflation-adjusted calculations (real values)
   const inflationFactor2027 = Math.pow(1 + inflationRate / 100, 2); // 2 years to peak 1
   const inflationFactor2029 = Math.pow(1 + inflationRate / 100, 4); // 4 years to peak 2
+  const inflationFactor2030 = Math.pow(1 + inflationRate / 100, 5); // 5 years to 2030
+  const inflationFactor2035 = Math.pow(1 + inflationRate / 100, 10); // 10 years to 2035
+  const inflationFactor2040 = Math.pow(1 + inflationRate / 100, 15); // 15 years to 2040
   
   // Real values (inflation-adjusted)
   const netProfitPeak1Real = netProfitPeak1 / inflationFactor2027;
   const netProfitPeak2Real = netProfitPeak2 / inflationFactor2029;
   const totalNetProfitReal = netProfitPeak1Real + netProfitPeak2Real;
+  
+  const netProfit2030Real = netProfit2030 / inflationFactor2030;
+  const netProfit2035Real = netProfit2035 / inflationFactor2035;
+  const netProfit2040Real = netProfit2040 / inflationFactor2040;
   
   const netProfitFull1Real = netProfitFull1 / inflationFactor2027;
   const netProfitFull2Real = netProfitFull2 / inflationFactor2029;
@@ -111,6 +142,17 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
     totalGrossProfit,
     totalNetProfit,
 
+    // Long-term projections
+    btcPeak2030,
+    btcPeak2035,
+    btcPeak2040,
+    valueAt2030,
+    valueAt2035,
+    valueAt2040,
+    netProfit2030,
+    netProfit2035,
+    netProfit2040,
+
     // Full strategy results
     valueAtPeak1Full,
     valueAtPeak2Full,
@@ -128,10 +170,16 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
     netProfitPeak1Real,
     netProfitPeak2Real,
     totalNetProfitReal,
+    netProfit2030Real,
+    netProfit2035Real,
+    netProfit2040Real,
     netProfitFull1Real,
     netProfitFull2Real,
     bondsNetReturnReal,
     inflationFactor2027,
-    inflationFactor2029
+    inflationFactor2029,
+    inflationFactor2030,
+    inflationFactor2035,
+    inflationFactor2040
   };
 }; 
