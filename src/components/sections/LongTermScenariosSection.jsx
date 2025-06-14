@@ -27,6 +27,16 @@ const LongTermScenariosSection = ({ btcStrategy }) => (
             </span>
           </div>
           <div className="flex justify-between">
+            <span className="text-secondary">Podatek (19%):</span>
+            <span className="font-semibold text-danger">-{formatPLN(btcStrategy.tax2030)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-secondary">Zysk netto:</span>
+            <span className={`font-semibold ${btcStrategy.netProfit2030 >= 0 ? 'text-success' : 'text-danger'}`}>
+              {formatPLN(btcStrategy.netProfit2030)}
+            </span>
+          </div>
+          <div className="flex justify-between">
             <span className="text-secondary">Siła nabywcza (2025):</span>
             <span className={`font-semibold ${btcStrategy.inflationAdjustedProfit2030 >= 0 ? 'text-success' : 'text-danger'}`}>
               {formatPLN(btcStrategy.inflationAdjustedProfit2030)}
@@ -50,6 +60,16 @@ const LongTermScenariosSection = ({ btcStrategy }) => (
             <span className="text-secondary">Zysk brutto:</span>
             <span className={`font-semibold ${btcStrategy.grossProfit2035 >= 0 ? 'text-success' : 'text-danger'}`}>
               {formatPLN(btcStrategy.grossProfit2035)}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-secondary">Podatek (19%):</span>
+            <span className="font-semibold text-danger">-{formatPLN(btcStrategy.tax2035)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-secondary">Zysk netto:</span>
+            <span className={`font-semibold ${btcStrategy.netProfit2035 >= 0 ? 'text-success' : 'text-danger'}`}>
+              {formatPLN(btcStrategy.netProfit2035)}
             </span>
           </div>
           <div className="flex justify-between">
@@ -79,6 +99,16 @@ const LongTermScenariosSection = ({ btcStrategy }) => (
             </span>
           </div>
           <div className="flex justify-between">
+            <span className="text-secondary">Podatek (19%):</span>
+            <span className="font-semibold text-danger">-{formatPLN(btcStrategy.tax2040)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-secondary">Zysk netto:</span>
+            <span className={`font-semibold ${btcStrategy.netProfit2040 >= 0 ? 'text-success' : 'text-danger'}`}>
+              {formatPLN(btcStrategy.netProfit2040)}
+            </span>
+          </div>
+          <div className="flex justify-between">
             <span className="text-secondary">Siła nabywcza (2025):</span>
             <span className={`font-semibold ${btcStrategy.inflationAdjustedProfit2040 >= 0 ? 'text-success' : 'text-danger'}`}>
               {formatPLN(btcStrategy.inflationAdjustedProfit2040)}
@@ -89,8 +119,12 @@ const LongTermScenariosSection = ({ btcStrategy }) => (
     </div>
     <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
       <p className="text-sm text-secondary">
-        <strong>Siła nabywcza (2025):</strong> Wartość zysku w dzisiejszych pieniądzach, skorygowana o inflację. 
-        Obliczana jako: Zysk nominalny ÷ (1 + inflacja)^lata. 
+        <strong>Obliczenia uwzględniają:</strong>
+        <br />
+        • <strong>Podatek dochodowy:</strong> 19% od zysków kapitałowych (powyżej 1 mln PLN: 23%)
+        <br />
+        • <strong>Siła nabywcza (2025):</strong> Wartość zysku netto w dzisiejszych pieniądzach, skorygowana o inflację. 
+        Obliczana jako: Zysk netto ÷ (1 + inflacja)^lata. 
         Przykład: Przy inflacji 4% rocznie, 100 000 PLN za 10 lat = 67 556 PLN w dzisiejszych pieniądzach.
         To pokazuje realną wartość zysku w dzisiejszych pieniądzach.
         <br />
