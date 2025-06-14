@@ -152,6 +152,9 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
     netProfit2030,
     netProfit2035,
     netProfit2040,
+    tax2030,
+    tax2035,
+    tax2040,
 
     // Full strategy results
     valueAtPeak1Full,

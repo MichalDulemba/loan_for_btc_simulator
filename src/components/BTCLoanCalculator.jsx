@@ -1,6 +1,6 @@
 import React from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { AlertTriangle, DollarSign, Target, Percent, PiggyBank } from 'lucide-react';
+import { AlertTriangle, DollarSign, Target, Percent, PiggyBank, Calendar } from 'lucide-react';
 
 // Import custom hooks
 import { useLoanCalculations } from '../hooks/useLoanCalculations';
@@ -36,7 +36,7 @@ const BTCLoanCalculator = () => {
   const finalProfitFull2 = btcStrategy.netProfitFull2 - loanCalcs.totalInterest;
   const bondsNetProfit = btcStrategy.bondsNetReturn - loanCalcs.bondsTotalInterest;
 
-  // Projection data for charts
+  // Projection data for charts with new scenarios
   const projectionData = [
     { 
       year: 2025, 
@@ -72,27 +72,48 @@ const BTCLoanCalculator = () => {
       value: btcStrategy.valueRemainingPeak2, 
       bonds: loanCalcs.bondsAmount * Math.pow(1 + loanCalcs.bondsRate / 100, 4),
       event: `Szczyt 2 (${100-btcStrategy.sellAtPeak1}% BTC)` 
+    },
+    { 
+      year: 2030, 
+      price: btcStrategy.btcPeak2030, 
+      value: btcStrategy.valueAt2030, 
+      bonds: loanCalcs.bondsAmount * Math.pow(1 + loanCalcs.bondsRate / 100, 5),
+      event: 'Projekcja 2030' 
+    },
+    { 
+      year: 2035, 
+      price: btcStrategy.btcPeak2035, 
+      value: btcStrategy.valueAt2035, 
+      bonds: loanCalcs.bondsAmount * Math.pow(1 + loanCalcs.bondsRate / 100, 10),
+      event: 'Projekcja 2035' 
+    },
+    { 
+      year: 2040, 
+      price: btcStrategy.btcPeak2040, 
+      value: btcStrategy.valueAt2040, 
+      bonds: loanCalcs.bondsAmount * Math.pow(1 + loanCalcs.bondsRate / 100, 15),
+      event: 'Projekcja 2040' 
     }
   ];
 
   return (
-    <div className="w-full max-w-5xl mx-auto p-8 bg-white rounded-lg shadow-lg">
+    <div className="w-full max-w-6xl mx-auto p-8 dark-card rounded-xl">
       <div className="mb-10">
-        <h1 className="text-4xl font-bold text-gray-800 mb-4">
+        <h1 className="text-4xl font-bold text-white mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
           Kalkulator kredytów na BTC - Symulator strategii
         </h1>
-        <p className="text-lg text-gray-600">
+        <p className="text-lg text-gray-300">
           Testuj różne scenariusze finansowania zakupu Bitcoin kredytami bankowymi
         </p>
       </div>
 
       {/* Ostrzeżenie o ryzyku */}
-      <div className="bg-red-50 border-l-4 border-red-500 p-6 mb-8">
+      <div className="bg-red-900/20 border-l-4 border-red-500 p-6 mb-8 rounded-r-lg">
         <div className="flex items-center">
-          <AlertTriangle className="text-red-500 mr-3" size={28} />
+          <AlertTriangle className="text-red-400 mr-3" size={28} />
           <div>
-            <p className="font-semibold text-red-800 text-lg">Ostrzeżenie o wysokim ryzyku</p>
-            <p className="text-red-700 text-base mt-2">
+            <p className="font-semibold text-red-300 text-lg">Ostrzeżenie o wysokim ryzyku</p>
+            <p className="text-red-200 text-base mt-2">
               Inwestowanie pożyczonych pieniędzy w kryptowaluty niesie ekstremalne ryzyko. 
               Możesz stracić więcej niż zainwestowałeś. Przemyśl decyzję dokładnie.
             </p>
@@ -131,23 +152,132 @@ const BTCLoanCalculator = () => {
         setInflationRate={btcStrategy.setInflationRate}
       />
 
+      {/* Long-term Scenarios Section */}
+      <div className="mb-10 dark-card p-6 rounded-xl">
+        <h2 className="text-2xl font-semibold mb-6 flex items-center text-white">
+          <Calendar className="mr-3" size={24} />
+          Scenariusze długoterminowe (2030-2040)
+        </h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* 2030 Scenario */}
+          <div className="bg-gradient-to-br from-blue-900/30 to-blue-800/20 p-6 rounded-lg border border-blue-600/30">
+            <h3 className="font-semibold mb-4 text-lg text-blue-300">
+              2030 - ${formatNumber(btcStrategy.btcPeak2030)}
+            </h3>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-gray-300">Wartość BTC:</span>
+                <span className="font-semibold text-white">{formatPLN(btcStrategy.valueAt2030)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-300">Zysk brutto:</span>
+                <span className="font-semibold text-green-400">{formatPLN(btcStrategy.grossProfit2030)}</span>
+              </div>
+              <div className="flex justify-between text-red-400">
+                <span>Podatek:</span>
+                <span className="font-semibold">-{formatPLN(btcStrategy.tax2030)}</span>
+              </div>
+              <div className="border-t border-blue-600/30 pt-2 mt-2">
+                <div className="flex justify-between text-lg">
+                  <span className="font-semibold text-white">Zysk netto:</span>
+                  <span className="font-bold text-green-400">
+                    {formatPLN(btcStrategy.netProfit2030)}
+                  </span>
+                </div>
+              </div>
+              <div className="text-sm text-gray-400">
+                <p>ROI: {formatPercentage(calculateROI(btcStrategy.netProfit2030, loanCalcs.loanAmount))}</p>
+                <p>Realna wartość: {formatPLN(btcStrategy.netProfit2030Real)}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 2035 Scenario */}
+          <div className="bg-gradient-to-br from-purple-900/30 to-purple-800/20 p-6 rounded-lg border border-purple-600/30">
+            <h3 className="font-semibold mb-4 text-lg text-purple-300">
+              2035 - ${formatNumber(btcStrategy.btcPeak2035)}
+            </h3>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-gray-300">Wartość BTC:</span>
+                <span className="font-semibold text-white">{formatPLN(btcStrategy.valueAt2035)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-300">Zysk brutto:</span>
+                <span className="font-semibold text-green-400">{formatPLN(btcStrategy.grossProfit2035)}</span>
+              </div>
+              <div className="flex justify-between text-red-400">
+                <span>Podatek:</span>
+                <span className="font-semibold">-{formatPLN(btcStrategy.tax2035)}</span>
+              </div>
+              <div className="border-t border-purple-600/30 pt-2 mt-2">
+                <div className="flex justify-between text-lg">
+                  <span className="font-semibold text-white">Zysk netto:</span>
+                  <span className="font-bold text-green-400">
+                    {formatPLN(btcStrategy.netProfit2035)}
+                  </span>
+                </div>
+              </div>
+              <div className="text-sm text-gray-400">
+                <p>ROI: {formatPercentage(calculateROI(btcStrategy.netProfit2035, loanCalcs.loanAmount))}</p>
+                <p>Realna wartość: {formatPLN(btcStrategy.netProfit2035Real)}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 2040 Scenario */}
+          <div className="bg-gradient-to-br from-emerald-900/30 to-emerald-800/20 p-6 rounded-lg border border-emerald-600/30">
+            <h3 className="font-semibold mb-4 text-lg text-emerald-300">
+              2040 - ${formatNumber(btcStrategy.btcPeak2040)}
+            </h3>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-gray-300">Wartość BTC:</span>
+                <span className="font-semibold text-white">{formatPLN(btcStrategy.valueAt2040)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-300">Zysk brutto:</span>
+                <span className="font-semibold text-green-400">{formatPLN(btcStrategy.grossProfit2040)}</span>
+              </div>
+              <div className="flex justify-between text-red-400">
+                <span>Podatek:</span>
+                <span className="font-semibold">-{formatPLN(btcStrategy.tax2040)}</span>
+              </div>
+              <div className="border-t border-emerald-600/30 pt-2 mt-2">
+                <div className="flex justify-between text-lg">
+                  <span className="font-semibold text-white">Zysk netto:</span>
+                  <span className="font-bold text-green-400">
+                    {formatPLN(btcStrategy.netProfit2040)}
+                  </span>
+                </div>
+              </div>
+              <div className="text-sm text-gray-400">
+                <p>ROI: {formatPercentage(calculateROI(btcStrategy.netProfit2040, loanCalcs.loanAmount))}</p>
+                <p>Realna wartość: {formatPLN(btcStrategy.netProfit2040Real)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Strategy Configuration */}
-      <div className="mb-10">
-        <h2 className="text-2xl font-semibold mb-6 flex items-center">
+      <div className="mb-10 dark-card p-6 rounded-xl">
+        <h2 className="text-2xl font-semibold mb-6 flex items-center text-white">
           <Target className="mr-3" size={24} />
           Strategia realizacji zysków
         </h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-base font-medium text-gray-700 mb-2">
+            <label className="block text-base font-medium text-gray-300 mb-2">
               Sprzedaż na szczycie 1 (%)
             </label>
             <input
               type="number"
               value={btcStrategy.sellAtPeak1}
               onChange={(e) => btcStrategy.setSellAtPeak1(Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md text-base"
+              className="w-full px-4 py-3 dark-input rounded-md text-base"
               min="0"
               max="100"
             />
@@ -160,14 +290,14 @@ const BTCLoanCalculator = () => {
               step="5"
               className="w-full mt-2"
             />
-            <p className="text-base text-gray-600 mt-2">
+            <p className="text-base text-gray-400 mt-2">
               Sprzedaż: {(btcStrategy.btcAmount * btcStrategy.sellAtPeak1 / 100).toFixed(4)} BTC | 
               Zostaje: {(btcStrategy.btcAmount * (100 - btcStrategy.sellAtPeak1) / 100).toFixed(4)} BTC
             </p>
           </div>
           
           <div>
-            <label className="block text-base font-medium text-gray-700 mb-4">
+            <label className="block text-base font-medium text-gray-300 mb-4">
               Opcje reinwestycji
             </label>
             <div className="space-y-3">
@@ -178,7 +308,7 @@ const BTCLoanCalculator = () => {
                   onChange={(e) => btcStrategy.setPayOffLoan(e.target.checked)}
                   className="mr-3"
                 />
-                <span className="text-base">Spłać część kredytu z zysków ze szczytu 1</span>
+                <span className="text-base text-gray-300">Spłać część kredytu z zysków ze szczytu 1</span>
               </label>
             </div>
           </div>
@@ -186,39 +316,39 @@ const BTCLoanCalculator = () => {
       </div>
 
       {/* Results Summary */}
-      <div className="mb-10">
-        <h2 className="text-2xl font-semibold mb-6 flex items-center">
+      <div className="mb-10 dark-card p-6 rounded-xl">
+        <h2 className="text-2xl font-semibold mb-6 flex items-center text-white">
           <Target className="mr-3" size={24} />
           Analiza wyników - Strategia {btcStrategy.sellAtPeak1}% / {100 - btcStrategy.sellAtPeak1}%
         </h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Peak 1 Results */}
-          <div className="p-6 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg">
-            <h3 className="font-semibold mb-4 text-lg">
+          <div className="bg-gradient-to-r from-blue-900/30 to-blue-800/20 p-6 rounded-lg border border-blue-600/30">
+            <h3 className="font-semibold mb-4 text-lg text-blue-300">
               Szczyt 1 ({formatUSD(btcStrategy.btcPeak1)}) - Sprzedaż {btcStrategy.sellAtPeak1}%
             </h3>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span>Sprzedane BTC:</span>
-                <span className="font-semibold">{btcStrategy.btcSoldPeak1.toFixed(4)} BTC</span>
+                <span className="text-gray-300">Sprzedane BTC:</span>
+                <span className="font-semibold text-white">{btcStrategy.btcSoldPeak1.toFixed(4)} BTC</span>
               </div>
               <div className="flex justify-between">
-                <span>Wartość sprzedaży:</span>
-                <span className="font-semibold">{formatPLN(btcStrategy.valueSoldPeak1)}</span>
+                <span className="text-gray-300">Wartość sprzedaży:</span>
+                <span className="font-semibold text-white">{formatPLN(btcStrategy.valueSoldPeak1)}</span>
               </div>
               <div className="flex justify-between">
-                <span>Zysk brutto:</span>
-                <span className="font-semibold">{formatPLN(btcStrategy.grossProfitPeak1)}</span>
+                <span className="text-gray-300">Zysk brutto:</span>
+                <span className="font-semibold text-green-400">{formatPLN(btcStrategy.grossProfitPeak1)}</span>
               </div>
-              <div className="flex justify-between text-red-600">
+              <div className="flex justify-between text-red-400">
                 <span>Podatek (19%):</span>
                 <span className="font-semibold">-{formatPLN(btcStrategy.taxPeak1)}</span>
               </div>
-              <div className="border-t pt-2 mt-2">
+              <div className="border-t border-blue-600/30 pt-2 mt-2">
                 <div className="flex justify-between text-lg">
-                  <span className="font-semibold">Zysk netto:</span>
-                  <span className="font-bold text-green-600">
+                  <span className="font-semibold text-white">Zysk netto:</span>
+                  <span className="font-bold text-green-400">
                     {formatPLN(btcStrategy.netProfitPeak1)}
                   </span>
                 </div>
@@ -227,31 +357,31 @@ const BTCLoanCalculator = () => {
           </div>
           
           {/* Peak 2 Results */}
-          <div className="p-6 bg-gradient-to-r from-green-50 to-green-100 rounded-lg">
-            <h3 className="font-semibold mb-4 text-lg">
+          <div className="bg-gradient-to-r from-green-900/30 to-green-800/20 p-6 rounded-lg border border-green-600/30">
+            <h3 className="font-semibold mb-4 text-lg text-green-300">
               Szczyt 2 ({formatUSD(btcStrategy.btcPeak2)}) - Pozostałe {100 - btcStrategy.sellAtPeak1}%
             </h3>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span>Pozostałe BTC:</span>
-                <span className="font-semibold">{btcStrategy.btcRemainingPeak2.toFixed(4)} BTC</span>
+                <span className="text-gray-300">Pozostałe BTC:</span>
+                <span className="font-semibold text-white">{btcStrategy.btcRemainingPeak2.toFixed(4)} BTC</span>
               </div>
               <div className="flex justify-between">
-                <span>Wartość BTC:</span>
-                <span className="font-semibold">{formatPLN(btcStrategy.valueRemainingPeak2)}</span>
+                <span className="text-gray-300">Wartość BTC:</span>
+                <span className="font-semibold text-white">{formatPLN(btcStrategy.valueRemainingPeak2)}</span>
               </div>
               <div className="flex justify-between">
-                <span>Zysk brutto:</span>
-                <span className="font-semibold">{formatPLN(btcStrategy.grossProfitPeak2)}</span>
+                <span className="text-gray-300">Zysk brutto:</span>
+                <span className="font-semibold text-green-400">{formatPLN(btcStrategy.grossProfitPeak2)}</span>
               </div>
-              <div className="flex justify-between text-red-600">
+              <div className="flex justify-between text-red-400">
                 <span>Podatek {btcStrategy.totalGrossProfit > 1000000 ? '(19%+4%)' : '(19%)'}:</span>
                 <span className="font-semibold">-{formatPLN(btcStrategy.taxPeak2)}</span>
               </div>
-              <div className="border-t pt-2 mt-2">
+              <div className="border-t border-green-600/30 pt-2 mt-2">
                 <div className="flex justify-between text-lg">
-                  <span className="font-semibold">Zysk netto:</span>
-                  <span className="font-bold text-green-600">
+                  <span className="font-semibold text-white">Zysk netto:</span>
+                  <span className="font-bold text-green-400">
                     {formatPLN(btcStrategy.netProfitPeak2)}
                   </span>
                 </div>
@@ -261,35 +391,35 @@ const BTCLoanCalculator = () => {
         </div>
         
         {/* Total Strategy Summary */}
-        <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg">
-          <h3 className="font-semibold mb-3">Podsumowanie całej strategii</h3>
+        <div className="mt-6 p-4 bg-gradient-to-r from-purple-900/30 to-purple-800/20 rounded-lg border border-purple-600/30">
+          <h3 className="font-semibold mb-3 text-purple-300">Podsumowanie całej strategii</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span>Łączny zysk netto:</span>
-                <span className="font-semibold">{formatPLN(btcStrategy.totalNetProfit)}</span>
+                <span className="text-gray-300">Łączny zysk netto:</span>
+                <span className="font-semibold text-white">{formatPLN(btcStrategy.totalNetProfit)}</span>
               </div>
-              <div className="flex justify-between text-red-600">
+              <div className="flex justify-between text-red-400">
                 <span>Koszt odsetek:</span>
                 <span className="font-semibold">-{formatPLN(adjustedTotalInterest)}</span>
               </div>
               <div className="flex justify-between text-lg font-bold">
-                <span>Zysk końcowy:</span>
-                <span className={finalProfitTotal > 0 ? 'text-green-600' : 'text-red-600'}>
+                <span className="text-white">Zysk końcowy:</span>
+                <span className={finalProfitTotal > 0 ? 'text-green-400' : 'text-red-400'}>
                   {formatPLN(finalProfitTotal)}
                 </span>
               </div>
             </div>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span>ROI:</span>
-                <span className={`font-bold text-lg ${finalProfitTotal > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <span className="text-gray-300">ROI:</span>
+                <span className={`font-bold text-lg ${finalProfitTotal > 0 ? 'text-green-400' : 'text-red-400'}`}>
                   {formatPercentage(calculateROI(finalProfitTotal, loanCalcs.loanAmount))}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span>Vs. 100% HODL:</span>
-                <span className="font-semibold">
+                <span className="text-gray-300">Vs. 100% HODL:</span>
+                <span className="font-semibold text-white">
                   {finalProfitTotal > finalProfitFull2 ? '+' : ''}{formatPLN(finalProfitTotal - finalProfitFull2)}
                 </span>
               </div>
@@ -299,37 +429,37 @@ const BTCLoanCalculator = () => {
       </div>
 
       {/* Inflation-adjusted Results */}
-      <div className="mb-10 p-6 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border-2 border-amber-200">
-        <h2 className="text-2xl font-semibold mb-6 flex items-center text-amber-800">
+      <div className="mb-10 p-6 bg-gradient-to-r from-amber-900/20 to-orange-900/20 rounded-lg border-2 border-amber-600/30">
+        <h2 className="text-2xl font-semibold mb-6 flex items-center text-amber-300">
           📊 Wyniki po korekcie inflacyjnej ({btcStrategy.inflationRate}% rocznie)
         </h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Strategy Results - Real Values */}
-          <div className="bg-white p-6 rounded-lg">
-            <h3 className="font-semibold mb-4 text-gray-800">Strategia częściowej sprzedaży (realna wartość)</h3>
+          <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-600/30">
+            <h3 className="font-semibold mb-4 text-gray-200">Strategia częściowej sprzedaży (realna wartość)</h3>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span>Zysk netto Szczyt 1 (2027):</span>
-                <span className="font-semibold text-green-600">
+                <span className="text-gray-300">Zysk netto Szczyt 1 (2027):</span>
+                <span className="font-semibold text-green-400">
                   {formatPLN(btcStrategy.netProfitPeak1Real)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span>Zysk netto Szczyt 2 (2029):</span>
-                <span className="font-semibold text-green-600">
+                <span className="text-gray-300">Zysk netto Szczyt 2 (2029):</span>
+                <span className="font-semibold text-green-400">
                   {formatPLN(btcStrategy.netProfitPeak2Real)}
                 </span>
               </div>
-              <div className="border-t pt-3 mt-3">
+              <div className="border-t border-gray-600/30 pt-3 mt-3">
                 <div className="flex justify-between text-lg">
-                  <span className="font-bold">Łączny zysk realny:</span>
-                  <span className="font-bold text-green-600">
+                  <span className="font-bold text-white">Łączny zysk realny:</span>
+                  <span className="font-bold text-green-400">
                     {formatPLN(btcStrategy.totalNetProfitReal)}
                   </span>
                 </div>
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-400">
                 <p>Nominalna wartość: {formatPLN(btcStrategy.totalNetProfit)}</p>
                 <p>Utrata siły nabywczej: -{formatPercentage((btcStrategy.totalNetProfit - btcStrategy.totalNetProfitReal) / btcStrategy.totalNetProfit)}</p>
               </div>
@@ -337,30 +467,30 @@ const BTCLoanCalculator = () => {
           </div>
 
           {/* Full HODL - Real Values */}
-          <div className="bg-white p-6 rounded-lg">
-            <h3 className="font-semibold mb-4 text-gray-800">Pełne HODL (realna wartość)</h3>
+          <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-600/30">
+            <h3 className="font-semibold mb-4 text-gray-200">Pełne HODL (realna wartość)</h3>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span>Sprzedaż w 2027 (${formatNumber(btcStrategy.btcPeak1)}):</span>
-                <span className="font-semibold text-blue-600">
+                <span className="text-gray-300">Sprzedaż w 2027 (${formatNumber(btcStrategy.btcPeak1)}):</span>
+                <span className="font-semibold text-blue-400">
                   {formatPLN(btcStrategy.netProfitFull1Real)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span>Sprzedaż w 2029 (${formatNumber(btcStrategy.btcPeak2)}):</span>
-                <span className="font-semibold text-blue-600">
+                <span className="text-gray-300">Sprzedaż w 2029 (${formatNumber(btcStrategy.btcPeak2)}):</span>
+                <span className="font-semibold text-blue-400">
                   {formatPLN(btcStrategy.netProfitFull2Real)}
                 </span>
               </div>
-              <div className="border-t pt-3 mt-3">
+              <div className="border-t border-gray-600/30 pt-3 mt-3">
                 <div className="flex justify-between text-lg">
-                  <span className="font-bold">Obligacje (realne):</span>
-                  <span className="font-bold text-green-600">
+                  <span className="font-bold text-white">Obligacje (realne):</span>
+                  <span className="font-bold text-green-400">
                     {formatPLN(btcStrategy.bondsNetReturnReal)}
                   </span>
                 </div>
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-400">
                 <p>Nominalna wartość: {formatPLN(btcStrategy.bondsNetReturn)}</p>
                 <p>Utrata siły nabywczej: -{formatPercentage((btcStrategy.bondsNetReturn - btcStrategy.bondsNetReturnReal) / btcStrategy.bondsNetReturn)}</p>
               </div>
@@ -369,41 +499,41 @@ const BTCLoanCalculator = () => {
         </div>
 
         {/* Inflation Impact Summary */}
-        <div className="mt-6 p-4 bg-white rounded-lg">
-          <h4 className="font-semibold mb-3 text-amber-800">💰 Wpływ inflacji na strategię</h4>
+        <div className="mt-6 p-4 bg-gray-800/50 rounded-lg border border-gray-600/30">
+          <h4 className="font-semibold mb-3 text-amber-300">💰 Wpływ inflacji na strategię</h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div>
-              <p className="font-semibold">Do 2027 (2 lata):</p>
-              <p>Inflacja skumulowana: {formatPercentage((btcStrategy.inflationFactor2027 - 1))}</p>
-              <p>1 PLN dziś = {(1/btcStrategy.inflationFactor2027).toFixed(2)} PLN realnie</p>
+              <p className="font-semibold text-gray-200">Do 2027 (2 lata):</p>
+              <p className="text-gray-300">Inflacja skumulowana: {formatPercentage((btcStrategy.inflationFactor2027 - 1))}</p>
+              <p className="text-gray-300">1 PLN dziś = {(1/btcStrategy.inflationFactor2027).toFixed(2)} PLN realnie</p>
             </div>
             <div>
-              <p className="font-semibold">Do 2029 (4 lata):</p>
-              <p>Inflacja skumulowana: {formatPercentage((btcStrategy.inflationFactor2029 - 1))}</p>
-              <p>1 PLN dziś = {(1/btcStrategy.inflationFactor2029).toFixed(2)} PLN realnie</p>
+              <p className="font-semibold text-gray-200">Do 2029 (4 lata):</p>
+              <p className="text-gray-300">Inflacja skumulowana: {formatPercentage((btcStrategy.inflationFactor2029 - 1))}</p>
+              <p className="text-gray-300">1 PLN dziś = {(1/btcStrategy.inflationFactor2029).toFixed(2)} PLN realnie</p>
             </div>
             <div>
-              <p className="font-semibold text-amber-700">Kluczowa obserwacja:</p>
-              <p>Dług {loanCalcs.loanAmount.toLocaleString()} PLN będzie "wart" realnie mniej z czasem</p>
-              <p>W 2029: ~{Math.round(loanCalcs.loanAmount / btcStrategy.inflationFactor2029).toLocaleString()} PLN dzisiejszej siły nabywczej</p>
+              <p className="font-semibold text-amber-300">Kluczowa obserwacja:</p>
+              <p className="text-gray-300">Dług {loanCalcs.loanAmount.toLocaleString()} PLN będzie "wart" realnie mniej z czasem</p>
+              <p className="text-gray-300">W 2029: ~{Math.round(loanCalcs.loanAmount / btcStrategy.inflationFactor2029).toLocaleString()} PLN dzisiejszej siły nabywczej</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Comparison Charts */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Wizualizacja strategii</h2>
+      <div className="mb-8 dark-card p-6 rounded-xl">
+        <h2 className="text-xl font-semibold mb-4 text-white">Wizualizacja strategii</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Price Projection Chart */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold mb-3">Projekcja wartości BTC vs Obligacje</h3>
+          <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-600/30">
+            <h3 className="font-semibold mb-3 text-gray-200">Projekcja wartości BTC vs Obligacje</h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={projectionData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="year" />
-                <YAxis tickFormatter={(value) => `${(value/1000).toFixed(0)}k`} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="year" stroke="#9CA3AF" />
+                <YAxis tickFormatter={(value) => `${(value/1000).toFixed(0)}k`} stroke="#9CA3AF" />
                 <Tooltip 
                   formatter={(value, name) => {
                     if (name === 'value') return formatPLN(value);
@@ -412,7 +542,12 @@ const BTCLoanCalculator = () => {
                     return value;
                   }}
                   labelFormatter={(label) => `Rok ${label}`}
-                  contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)' }}
+                  contentStyle={{ 
+                    backgroundColor: 'rgba(31, 41, 55, 0.95)', 
+                    border: '1px solid #4B5563',
+                    borderRadius: '8px',
+                    color: '#E5E7EB'
+                  }}
                 />
                 <Line 
                   type="monotone" 
@@ -432,15 +567,15 @@ const BTCLoanCalculator = () => {
                 />
               </LineChart>
             </ResponsiveContainer>
-            <div className="mt-2 text-xs text-gray-600">
-              <span className="text-blue-600">■</span> Strategia BTC | 
-              <span className="text-green-600">■</span> Strategia Obligacji
+            <div className="mt-2 text-xs text-gray-400">
+              <span className="text-blue-400">■</span> Strategia BTC | 
+              <span className="text-green-400">■</span> Strategia Obligacji
             </div>
           </div>
           
           {/* ROI Comparison Chart */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold mb-3">Porównanie zwrotu z inwestycji (ROI)</h3>
+          <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-600/30">
+            <h3 className="font-semibold mb-3 text-gray-200">Porównanie zwrotu z inwestycji (ROI)</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={[
                 { 
@@ -454,16 +589,21 @@ const BTCLoanCalculator = () => {
                   profit: bondsNetProfit
                 }
               ]}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="strategy" />
-                <YAxis tickFormatter={(value) => `${value}%`} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="strategy" stroke="#9CA3AF" />
+                <YAxis tickFormatter={(value) => `${value}%`} stroke="#9CA3AF" />
                 <Tooltip 
                   formatter={(value, name) => {
                     if (name === 'roi') return `${value}%`;
                     if (name === 'profit') return formatPLN(value);
                     return value;
                   }}
-                  contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)' }}
+                  contentStyle={{ 
+                    backgroundColor: 'rgba(31, 41, 55, 0.95)', 
+                    border: '1px solid #4B5563',
+                    borderRadius: '8px',
+                    color: '#E5E7EB'
+                  }}
                 />
                 <Bar 
                   dataKey="roi" 
@@ -477,22 +617,22 @@ const BTCLoanCalculator = () => {
       </div>
 
       {/* Strategy Recommendations */}
-      <div className="bg-gray-100 p-6 rounded-lg">
-        <h3 className="font-semibold mb-3">Kluczowe rekomendacje</h3>
+      <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-600/30">
+        <h3 className="font-semibold mb-3 text-white">Kluczowe rekomendacje</h3>
         
-        <div className="mb-4 p-3 bg-white rounded">
-          <h4 className="font-semibold mb-2">🎯 Wybór strategii na podstawie wyników:</h4>
+        <div className="mb-4 p-3 bg-gray-700/50 rounded border border-gray-600/30">
+          <h4 className="font-semibold mb-2 text-gray-200">🎯 Wybór strategii na podstawie wyników:</h4>
           <div className="text-sm">
             {finalProfitTotal > bondsNetProfit * 3 ? (
-              <p className="text-green-700 font-semibold">
+              <p className="text-green-400 font-semibold">
                 ✅ BTC zdecydowanie opłacalne - potencjalny zysk {((finalProfitTotal / bondsNetProfit - 1) * 100).toFixed(0)}% wyższy od obligacji
               </p>
             ) : finalProfitTotal > bondsNetProfit ? (
-              <p className="text-yellow-700 font-semibold">
+              <p className="text-yellow-400 font-semibold">
                 ⚖️ BTC umiarkowanie opłacalne - zysk {formatPLN(finalProfitTotal - bondsNetProfit)} wyższy, ale wyższe ryzyko
               </p>
             ) : (
-              <p className="text-red-700 font-semibold">
+              <p className="text-red-400 font-semibold">
                 🛡️ Obligacje bezpieczniejsze - lepszy stosunek ryzyko/zysk o {formatPLN(bondsNetProfit - finalProfitTotal)}
               </p>
             )}
@@ -501,8 +641,8 @@ const BTCLoanCalculator = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div>
-            <h4 className="font-semibold text-green-700">✓ Strategia BTC - kiedy wybierać</h4>
-            <ul className="mt-2 space-y-1 text-gray-700">
+            <h4 className="font-semibold text-green-400">✓ Strategia BTC - kiedy wybierać</h4>
+            <ul className="mt-2 space-y-1 text-gray-300">
               <li>• ROI BTC {'>'} {loanCalcs.bondsRate * 3}% (ponad 3x obligacje)</li>
               <li>• Jesteś gotowy na 80% straty tymczasowo</li>
               <li>• Masz stabilny dochód na raty</li>
@@ -512,8 +652,8 @@ const BTCLoanCalculator = () => {
           </div>
           
           <div>
-            <h4 className="font-semibold text-blue-700">🛡️ Strategia Obligacji - kiedy wybierać</h4>
-            <ul className="mt-2 space-y-1 text-gray-700">
+            <h4 className="font-semibold text-blue-400">🛡️ Strategia Obligacji - kiedy wybierać</h4>
+            <ul className="mt-2 space-y-1 text-gray-300">
               <li>• Chcesz gwarantowanego zysku {loanCalcs.bondsRate}%</li>
               <li>• Nie tolerujesz wysokiej volatilności</li>
               <li>• Potrzebujesz przewidywalności</li>
@@ -523,9 +663,9 @@ const BTCLoanCalculator = () => {
           </div>
           
           <div>
-            <h4 className="font-semibold text-red-700">✗ Czego unikać w obu strategiach</h4>
-            <ul className="mt-2 space-y-1 text-gray-700">
-              <li>• Nie kredituj więcej niż 30% dochodu</li>
+            <h4 className="font-semibold text-red-400">✗ Czego unikać w obu strategiach</h4>
+            <ul className="mt-2 space-y-1 text-gray-300">
+              <li>• Nie kredytuj więcej niż 30% dochodu</li>
               <li>• Nie ignoruj podatków (19% w Polsce)</li>
               <li>• Nie inwestuj bez funduszu awaryjnego</li>
               <li>• Nie kupuj BTC na ATH</li>
@@ -534,14 +674,14 @@ const BTCLoanCalculator = () => {
           </div>
         </div>
         
-        <div className="mt-4 p-3 bg-white rounded">
-          <p className="text-sm font-semibold text-gray-700">
+        <div className="mt-4 p-3 bg-gray-700/50 rounded border border-gray-600/30">
+          <p className="text-sm font-semibold text-gray-300">
             💡 Strategia hybrydowa: Możesz też podzielić kwotę - część na BTC (w bessie), część na obligacje (stabilność)
           </p>
         </div>
         
-        <div className="mt-4 p-3 bg-yellow-50 rounded">
-          <p className="text-sm font-semibold text-gray-700">
+        <div className="mt-4 p-3 bg-yellow-900/20 rounded border border-yellow-600/30">
+          <p className="text-sm font-semibold text-yellow-300">
             ⚖️ Pamiętaj: Odsetki od kredytów na kryptowaluty NIE są kosztem uzyskania przychodu w Polsce!
           </p>
         </div>
