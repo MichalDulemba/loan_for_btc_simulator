@@ -1,6 +1,14 @@
 // BTC price scenarios for 2030, 2035, and 2040
 
 export const SCENARIOS = {
+  pessimistic: { 
+    peak1: 120000, 
+    peak2: 200000, 
+    peak2030: 150000,
+    peak2035: 250000,
+    peak2040: 350000,
+    label: 'Pesymistyczny' 
+  },
   conservative: { 
     peak1: 150000, 
     peak2: 300000, 
@@ -24,13 +32,5 @@ export const SCENARIOS = {
     peak2035: 1200000,
     peak2040: 2000000,
     label: 'Byczy' 
-  },
-  hyperbullish: { 
-    peak1: 500000, 
-    peak2: 1000000, 
-    peak2030: 800000,
-    peak2035: 1500000,
-    peak2040: 3000000,
-    label: 'Hiper-byczy' 
   }
 }; 
