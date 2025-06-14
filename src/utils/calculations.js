@@ -7,7 +7,8 @@ export const calculateMonthlyPayment = (principal, rate, years) => {
 };
 
 export const calculateBreakEvenPrice = (loanAmount, totalInterest, btcAmount, usdPlnRate) => {
-  return (loanAmount + totalInterest) / (btcAmount * usdPlnRate * 0.81); // 0.81 = po podatku 19%
+  const denominator = btcAmount * usdPlnRate * 0.81; // 0.81 = po podatku 19%
+  return denominator > 0 ? (loanAmount + totalInterest) / denominator : 0;
 };
 
 export const calculateTax = (grossProfit, isProgressive = false, threshold = 1000000) => {
@@ -18,7 +19,7 @@ export const calculateTax = (grossProfit, isProgressive = false, threshold = 100
 };
 
 export const calculateROI = (profit, investment) => {
-  return (profit / investment * 100);
+  return investment > 0 ? (profit / investment * 100) : 0;
 };
 
 export const calculateCompoundReturns = (principal, rate, years) => {

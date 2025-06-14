@@ -20,7 +20,7 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
   const btcPeak2040 = scenario?.peak2040 || 1200000;
 
   // BTC calculations
-  const btcAmount = loanAmount / (btcBuyPrice * usdPlnRate);
+  const btcAmount = (btcBuyPrice > 0 && usdPlnRate > 0) ? loanAmount / (btcBuyPrice * usdPlnRate) : 0;
   const breakEvenPrice = calculateBreakEvenPrice(loanAmount, totalInterest, btcAmount, usdPlnRate);
 
   // Strategy calculations
@@ -29,13 +29,13 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
 
   // Peak 1 calculations
   const valueSoldPeak1 = btcSoldPeak1 * btcPeak1 * usdPlnRate;
-  const grossProfitPeak1 = valueSoldPeak1 - (loanAmount * sellAtPeak1 / 100);
+  const grossProfitPeak1 = valueSoldPeak1 - (btcSoldPeak1 * btcBuyPrice * usdPlnRate);
   const taxPeak1 = calculateTax(grossProfitPeak1);
   const netProfitPeak1 = grossProfitPeak1 - taxPeak1;
 
   // Peak 2 calculations
   const valueRemainingPeak2 = btcRemainingPeak2 * btcPeak2 * usdPlnRate;
-  const grossProfitPeak2 = valueRemainingPeak2 - (loanAmount * (100 - sellAtPeak1) / 100);
+  const grossProfitPeak2 = valueRemainingPeak2 - (btcRemainingPeak2 * btcBuyPrice * usdPlnRate);
   const totalGrossProfit = grossProfitPeak1 + grossProfitPeak2;
   
   const taxPeak2 = totalGrossProfit > TAX_RATES.THRESHOLD 
@@ -49,9 +49,9 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
   const valueAt2035 = btcAmount * btcPeak2035 * usdPlnRate;
   const valueAt2040 = btcAmount * btcPeak2040 * usdPlnRate;
   
-  const grossProfit2030 = valueAt2030 - loanAmount;
-  const grossProfit2035 = valueAt2035 - loanAmount;
-  const grossProfit2040 = valueAt2040 - loanAmount;
+  const grossProfit2030 = valueAt2030 - (btcAmount * btcBuyPrice * usdPlnRate);
+  const grossProfit2035 = valueAt2035 - (btcAmount * btcBuyPrice * usdPlnRate);
+  const grossProfit2040 = valueAt2040 - (btcAmount * btcBuyPrice * usdPlnRate);
   
   const tax2030 = calculateTax(grossProfit2030, grossProfit2030 > TAX_RATES.THRESHOLD);
   const tax2035 = calculateTax(grossProfit2035, grossProfit2035 > TAX_RATES.THRESHOLD);
@@ -68,8 +68,8 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
   const valueAtPeak1Full = btcAmount * btcPeak1 * usdPlnRate;
   const valueAtPeak2Full = btcAmount * btcPeak2 * usdPlnRate;
   
-  const grossProfitFull1 = valueAtPeak1Full - loanAmount;
-  const grossProfitFull2 = valueAtPeak2Full - loanAmount;
+  const grossProfitFull1 = valueAtPeak1Full - (btcAmount * btcBuyPrice * usdPlnRate);
+  const grossProfitFull2 = valueAtPeak2Full - (btcAmount * btcBuyPrice * usdPlnRate);
   
   const taxFull1 = calculateTax(grossProfitFull1);
   const taxFull2 = calculateTax(grossProfitFull2, grossProfitFull2 > TAX_RATES.THRESHOLD);
@@ -83,25 +83,26 @@ export const useBTCStrategy = (loanAmount, totalInterest, bondsAmount, bondsRate
   const bondsNetReturn = bondsCompoundReturns - bondsTax;
 
   // Inflation-adjusted calculations (real values)
-  const inflationFactor2027 = Math.pow(1 + inflationRate / 100, 2); // 2 years to peak 1
-  const inflationFactor2029 = Math.pow(1 + inflationRate / 100, 4); // 4 years to peak 2
-  const inflationFactor2030 = Math.pow(1 + inflationRate / 100, 5); // 5 years to 2030
-  const inflationFactor2035 = Math.pow(1 + inflationRate / 100, 10); // 10 years to 2035
-  const inflationFactor2040 = Math.pow(1 + inflationRate / 100, 15); // 15 years to 2040
+  const inflationFactor2027 = Math.pow(1 + (inflationRate || 0) / 100, 2); // 2 years to peak 1
+  const inflationFactor2029 = Math.pow(1 + (inflationRate || 0) / 100, 4); // 4 years to peak 2
+  const inflationFactor2030 = Math.pow(1 + (inflationRate || 0) / 100, 5); // 5 years to 2030
+  const inflationFactor2035 = Math.pow(1 + (inflationRate || 0) / 100, 10); // 10 years to 2035
+  const inflationFactor2040 = Math.pow(1 + (inflationRate || 0) / 100, 15); // 15 years to 2040
   
   // Real values (inflation-adjusted)
-  const netProfitPeak1Real = netProfitPeak1 / inflationFactor2027;
-  const netProfitPeak2Real = netProfitPeak2 / inflationFactor2029;
+  const netProfitPeak1Real = inflationFactor2027 > 0 ? netProfitPeak1 / inflationFactor2027 : netProfitPeak1;
+  const netProfitPeak2Real = inflationFactor2029 > 0 ? netProfitPeak2 / inflationFactor2029 : netProfitPeak2;
   const totalNetProfitReal = netProfitPeak1Real + netProfitPeak2Real;
   
-  const netProfit2030Real = netProfit2030 / inflationFactor2030;
-  const netProfit2035Real = netProfit2035 / inflationFactor2035;
-  const netProfit2040Real = netProfit2040 / inflationFactor2040;
+  const netProfit2030Real = inflationFactor2030 > 0 ? netProfit2030 / inflationFactor2030 : netProfit2030;
+  const netProfit2035Real = inflationFactor2035 > 0 ? netProfit2035 / inflationFactor2035 : netProfit2035;
+  const netProfit2040Real = inflationFactor2040 > 0 ? netProfit2040 / inflationFactor2040 : netProfit2040;
   
-  const netProfitFull1Real = netProfitFull1 / inflationFactor2027;
-  const netProfitFull2Real = netProfitFull2 / inflationFactor2029;
+  const netProfitFull1Real = inflationFactor2027 > 0 ? netProfitFull1 / inflationFactor2027 : netProfitFull1;
+  const netProfitFull2Real = inflationFactor2029 > 0 ? netProfitFull2 / inflationFactor2029 : netProfitFull2;
   
-  const bondsNetReturnReal = bondsNetReturn / Math.pow(1 + inflationRate / 100, loanYears);
+  const bondsNetReturnReal = Math.pow(1 + (inflationRate || 0) / 100, loanYears) > 0 ? 
+    bondsNetReturn / Math.pow(1 + (inflationRate || 0) / 100, loanYears) : bondsNetReturn;
 
   return {
     // State

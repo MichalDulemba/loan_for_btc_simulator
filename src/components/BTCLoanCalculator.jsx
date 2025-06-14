@@ -461,7 +461,7 @@ const BTCLoanCalculator = () => {
               </div>
               <div className="text-sm text-gray-400">
                 <p>Nominalna wartość: {formatPLN(btcStrategy.totalNetProfit)}</p>
-                <p>Utrata siły nabywczej: -{formatPercentage((btcStrategy.totalNetProfit - btcStrategy.totalNetProfitReal) / btcStrategy.totalNetProfit)}</p>
+                <p>Utrata siły nabywczej: -{btcStrategy.totalNetProfit > 0 ? formatPercentage((btcStrategy.totalNetProfit - btcStrategy.totalNetProfitReal) / btcStrategy.totalNetProfit) : '0%'}</p>
               </div>
             </div>
           </div>
@@ -492,7 +492,7 @@ const BTCLoanCalculator = () => {
               </div>
               <div className="text-sm text-gray-400">
                 <p>Nominalna wartość: {formatPLN(btcStrategy.bondsNetReturn)}</p>
-                <p>Utrata siły nabywczej: -{formatPercentage((btcStrategy.bondsNetReturn - btcStrategy.bondsNetReturnReal) / btcStrategy.bondsNetReturn)}</p>
+                <p>Utrata siły nabywczej: -{btcStrategy.bondsNetReturn > 0 ? formatPercentage((btcStrategy.bondsNetReturn - btcStrategy.bondsNetReturnReal) / btcStrategy.bondsNetReturn) : '0%'}</p>
               </div>
             </div>
           </div>
