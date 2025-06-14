@@ -28,4 +28,13 @@ export const calculateCompoundReturns = (principal, rate, years) => {
 
 export const calculateInterestSavings = (earlyPayment, totalLoan, totalInterest, timeReduction = 0.6) => {
   return (Math.min(earlyPayment, totalLoan) / totalLoan) * totalInterest * timeReduction;
+};
+
+export const calculatePurchasingPower = (nominalValue, inflationRate, years) => {
+  // Calculate purchasing power adjusted value
+  // Formula: Real Value = Nominal Value / (1 + inflation_rate)^years
+  // This gives us the value in today's money, accounting for inflation
+  // Example: 100,000 PLN in 10 years with 4% inflation = 67,556 PLN in today's money
+  const inflationFactor = Math.pow(1 + inflationRate / 100, years);
+  return nominalValue / inflationFactor;
 }; 

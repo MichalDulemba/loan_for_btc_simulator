@@ -27,7 +27,7 @@ const LongTermScenariosSection = ({ btcStrategy }) => (
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-secondary">Skorygowane o inflację:</span>
+            <span className="text-secondary">Siła nabywcza (2025):</span>
             <span className={`font-semibold ${btcStrategy.inflationAdjustedProfit2030 >= 0 ? 'text-success' : 'text-danger'}`}>
               {formatPLN(btcStrategy.inflationAdjustedProfit2030)}
             </span>
@@ -53,7 +53,7 @@ const LongTermScenariosSection = ({ btcStrategy }) => (
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-secondary">Skorygowane o inflację:</span>
+            <span className="text-secondary">Siła nabywcza (2025):</span>
             <span className={`font-semibold ${btcStrategy.inflationAdjustedProfit2035 >= 0 ? 'text-success' : 'text-danger'}`}>
               {formatPLN(btcStrategy.inflationAdjustedProfit2035)}
             </span>
@@ -79,13 +79,23 @@ const LongTermScenariosSection = ({ btcStrategy }) => (
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-secondary">Skorygowane o inflację:</span>
+            <span className="text-secondary">Siła nabywcza (2025):</span>
             <span className={`font-semibold ${btcStrategy.inflationAdjustedProfit2040 >= 0 ? 'text-success' : 'text-danger'}`}>
               {formatPLN(btcStrategy.inflationAdjustedProfit2040)}
             </span>
           </div>
         </div>
       </div>
+    </div>
+    <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+      <p className="text-sm text-secondary">
+        <strong>Siła nabywcza (2025):</strong> Wartość zysku w dzisiejszych pieniądzach, skorygowana o inflację. 
+        Obliczana jako: Zysk nominalny ÷ (1 + inflacja)^lata. 
+        Przykład: Przy inflacji 4% rocznie, 100 000 PLN za 10 lat = 67 556 PLN w dzisiejszych pieniądzach.
+        To pokazuje realną wartość zysku w dzisiejszych pieniądzach.
+        <br />
+        <em>Używana stopa inflacji: {btcStrategy.inflationRate || 4}% rocznie</em>
+      </p>
     </div>
   </div>
 );
